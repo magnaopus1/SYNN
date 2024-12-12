@@ -1,0 +1,16 @@
+AdjustInvestmentShares
+RecordAssetExpiry
+VerifyDistributionHash
+ConfirmDividendRecord
+LogInvestmentAdjustment
+SetReturnCalculationParameters
+TrackComplianceVerification
+ApproveReturnEvent
+ConfirmTransactionAudit
+AdjustAssetValue
+RegisterTokenExpiry
+TrackDividendSchedule
+ConfirmAssetOwnership
+EnableInvestmentNotifications
+VerifyReturnAuditTrail
+LogShareDistribution

@@ -1,0 +1,15 @@
+SetLatePaymentFee
+TrackRentalYield
+ApproveRentalModification
+RecordLeaseRenewal
+SetMaintenanceSchedule
+LogRentalIncome
+RegisterPropertyTransfer
+ConfirmRentalTokenStatus
+TrackRentDueDates
+VerifyTenantCompliance
+RecordRentalAgreementUpdate
+ApproveLeaseTermination
+ConfirmPropertyDetails
+LogMaintenanceRequestStatus
+TrackDepositHistory

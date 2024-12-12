@@ -1,0 +1,16 @@
+CreateInsurancePolicy
+SetPolicyDetails
+UpdatePolicyPremium
+AddCoverageDetail
+SetPolicyStartDate
+SetPolicyEndDate
+ActivatePolicy
+DeactivatePolicy
+TransferPolicyOwnership
+RegisterClaim
+ApproveClaim
+RejectClaim
+UpdateClaimStatus
+LogClaimPayout
+TrackPremiumPayments
+VerifyOwnership

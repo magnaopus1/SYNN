@@ -1,0 +1,15 @@
+RegisterIndexManager
+ValidateRebalanceFrequency
+ConfirmRebalanceExecution
+LogIndexTradeExecution
+ApproveComponentWeightChange
+RegisterComponentPriceUpdate
+TrackIndexYield
+ConfirmIndexOwnershipTransfer
+LogComponentRemoval
+ApproveMarketValueUpdate
+TrackIndexPerformance
+RegisterMarketDataProvider
+SetRealTimeValueTracking
+ApproveRiskAdjustment
+ConfirmPortfolioCompliance

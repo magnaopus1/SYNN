@@ -1,0 +1,15 @@
+CreateFuturesToken
+SetFuturesContractMetadata
+UpdateContractExpirationDate
+LinkFuturesTokenToContract
+VerifyFuturesOwnership
+TransferFuturesTokenOwnership
+RecordFuturesTransaction
+ApproveFuturesTrade
+TrackFuturesContractValue
+EnablePriceTrackingMechanism
+AdjustContractSize
+RecordSpeculativePosition
+TrackProfitAndLoss
+UpdateMarginRequirements
+RegisterPositionEntry

@@ -1,0 +1,14 @@
+FROM alpine:latest
+
+WORKDIR /scripts
+
+# Install any necessary dependencies (e.g., Bash, Python)
+RUN apk add --no-cache bash
+
+COPY . .
+
+# Make scripts executable
+RUN chmod +x *.sh
+
+# Set the entrypoint to your main script
+ENTRYPOINT ["./main_script.sh"]

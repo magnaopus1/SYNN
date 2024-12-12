@@ -1,0 +1,17 @@
+RecordProposalHistory
+AdjustTokenReputation
+EnableTokenDelegation
+SetProposalVotingDeadline
+ConfirmVotingRestrictions
+ScheduleProposalVote
+RegisterGovernanceOutcome
+TrackProposalStatusChange
+EnableVotingAuditTrail
+RecordTokenIssuance
+LogDAOAudit
+ValidateVotingParticipation
+TrackGovernanceProposalStatus
+ConfirmProposalResult
+AdjustDAOReputation
+RecordMemberActivity
+ScheduleTokenTransferApproval

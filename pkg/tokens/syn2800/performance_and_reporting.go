@@ -1,0 +1,15 @@
+ScheduleComplianceCheck
+LogClaimApproval
+AdjustCoverageAmount
+RecordBeneficiaryVerification
+SetPremiumDueDate
+ConfirmClaimAmountPaid
+VerifyPolicyRenewal
+TrackClaimPaymentDate
+ApprovePolicyTransferRequest
+RecordPolicyStatus
+AdjustPolicyCompliance
+LogOwnershipTransfer
+TrackPolicyVestingStatus
+ScheduleBeneficiaryUpdate
+ConfirmPolicyPremiumAmount

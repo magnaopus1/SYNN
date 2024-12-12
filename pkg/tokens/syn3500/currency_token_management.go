@@ -1,0 +1,15 @@
+CreateCurrencyToken
+SetCurrencyMetadata
+UpdateExchangeRate
+LinkTokenToFiatCurrency
+VerifyCurrencyOwnership
+TransferCurrencyTokenOwnership
+RecordCurrencyTransaction
+ApproveCurrencyTrade
+TrackCurrencyValue
+EnablePeggingMechanism
+AdjustCurrencySupply
+RecordStablecoinMinting
+RecordStablecoinBurning
+UpdateInterestRate
+RegisterInterestAccount

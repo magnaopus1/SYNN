@@ -1,0 +1,14 @@
+SetTimeLockedFeature
+RegisterAllocationAudit
+ApproveTokenAdjustment
+RegisterTokenAuditTrail
+LogTransactionHistory
+ApproveTransferRequest
+RegisterEscrowAuditTrail
+ConfirmEscrowReleaseCompliance
+LogTokenTransactionHistory
+ApproveDocumentRelease
+TrackEscrowCompliance
+ApproveClaimRequest
+LogConditionalCompliance
+TrackAuditSchedule

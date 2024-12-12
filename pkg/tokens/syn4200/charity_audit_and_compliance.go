@@ -1,0 +1,15 @@
+RegisterComplianceUpdate
+EnableDetailedAllocationRecords
+ConfirmFundAllocation
+SetTimeLockedFeature
+RegisterAllocationAudit
+ApproveDonationClaim
+RegisterEscrowTransaction
+ConfirmComplianceStatus
+LogTransactionHistory
+ApproveDonationAdjustment
+RegisterDonorUpdate
+ConfirmEscrowReleaseCompliance
+SetDonationManagementParameters
+TrackRealTimeCompliance
+ApproveEscrowFundUse

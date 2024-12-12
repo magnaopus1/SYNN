@@ -1,0 +1,15 @@
+RegisterComplianceUpdate
+EnableDetailedAllocationRecords
+ConfirmFundAllocation
+SetTimeLockedFeature
+RegisterAllocationAudit
+ApproveGrantReallocation
+EnableRealTimeGrantTracking
+RegisterGrantFundDistribution
+TrackRealTimeGrantUsage
+ApproveMilestoneDisbursement
+RegisterConditionCompliance
+ConfirmEscrowCompliance
+LogTransactionHistory
+ApproveBenefitAdjustment
+RegisterBeneficiaryUpdate

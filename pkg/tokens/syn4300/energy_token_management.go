@@ -1,0 +1,15 @@
+CreateEnergyToken
+SetEnergyMetadata
+UpdateEnergyQuantity
+LinkTokenToAsset
+VerifyOwner
+TransferEnergyOwnership
+RecordEnergyTransaction
+ApproveEnergyTrade
+TrackEnergyUsage
+SetEnergyExpiry
+EnableConditionalEnergyRelease
+RegisterAssetCertification
+RemoveEnergyCertification
+TrackCarbonOffset
+ApproveSustainabilityReport

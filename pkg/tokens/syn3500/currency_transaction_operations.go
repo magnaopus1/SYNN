@@ -1,0 +1,15 @@
+SetPeggingApproval
+TrackCurrencySupply
+RecordExchangeRateChange
+ConfirmCurrencyTransaction
+ValidateFiatLink
+ApproveInterestDisbursement
+LogCurrencyTransaction
+RegisterTokenMinting
+ApprovePeggedTokenTransfer
+ConfirmTokenOwnership
+ValidateTransferRequest
+SetTokenExpirationDate
+TrackStablecoinValue
+LogInterestAccountActivity
+RegisterPeggingApprovalRecord

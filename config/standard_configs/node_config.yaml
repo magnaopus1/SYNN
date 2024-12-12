@@ -1,0 +1,32 @@
+server:
+  address: "http://192.168.1.10:8080"  # The IP and port where the node API is accessible
+
+node:
+  id: "node001"  # Unique identifier for the node
+  name: "MainNode"  # User-defined name for the node
+  type: "standard"  # The type of node (e.g., standard, validator, etc.)
+  ip: "192.168.1.10"  # IP address of the node (used as the server address)
+  latitude: ""  # Latitude of the node (leave empty to discover)
+  longitude: ""  # Longitude of the node (leave empty to discover)
+
+  connection_pool:
+    max_idle_time: 300  # Max idle time in seconds
+    max_connections: 100  # Maximum number of connections allowed
+
+firewall:
+  enabled: true  # Set to 'true' to enable or disable the firewall
+  whitelisted_ips: "192.168.1.200,192.168.1.201"  # Comma-separated list of IPs to allow
+  blacklisted_ips: "192.168.1.50,192.168.1.51"    # Comma-separated list of IPs to block
+
+fault_tolerance:
+  enabled: true  # Set to 'true' to enable fault tolerance or 'false' to disable
+  quorum_check_interval: 30  # Interval in seconds to check if the quorum is alive
+  recovery_attempts: 3  # Number of recovery attempts before declaring failure
+  sync_on_recovery: true  # Sync the node with the network upon recovery
+
+peer:
+  id: ""  # Dynamic peer ID. If left empty, the script will discover peers.
+  ip: ""  # Dynamic peer IP. If left empty, the script will discover peers.
+
+geolocation:
+  enabled: true  # Set to 'true' to enable geolocation or 'false' to disable

@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  api:
+    image: your-registry.com/synnergy/api:1.0.0
+    ports:
+      - "8080:8080"
+    restart: always
+  cli:
+    image: your-registry.com/synnergy/cli:1.0.0
+    stdin_open: true
+    tty: true
+  scripts:
+    image: your-registry.com/synnergy/scripts:1.0.0
+    restart: on-failure
+version: '3.8'
+services:
+  mainnet_node:
+    build:
+      context: ./mainnet
+      dockerfile: Dockerfile
+    image: your-registry.com/synnergy/mainnet_node:1.0.0
+    ports:
+      - "30303:30303"
+    volumes:
+      - mainnet_data:/mainnet/data
+    restart: always
+    environment:
+      - CONFIG_PATH=/mainnet/configs/mainnet_config.yaml
+  packages:
+    build:
+      context: ./packages
+      dockerfile: Dockerfile
+    image: your-registry.com/synnergy/packages:1.0.0
+    volumes:
+      - packages_data:/app
+    restart: on-failure
+    command: ["sleep", "infinity"] # Keep the container running if needed
+volumes:
+  mainnet_data:
+  packages_data:

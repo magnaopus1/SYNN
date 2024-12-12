@@ -1,0 +1,15 @@
+ConfirmMembershipActivity
+RecordGovernanceProposal
+LogDAOAction
+ApproveVotingRecord
+ValidateTokenOwnership
+LogReputationAdjustment
+TrackGovernanceDecision
+AdjustVotingDeadline
+ScheduleMembershipApproval
+FinalizeVotingOutcome
+EnableTokenTransfer
+SetReputationParameters
+ConfirmProposalApproval
+TrackVotingParticipation
+RegisterProposalResult

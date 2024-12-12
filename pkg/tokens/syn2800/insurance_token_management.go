@@ -1,0 +1,16 @@
+CreateInsuranceToken
+SetPolicyDetails
+TransferPolicyOwnership
+UpdateCoverageAmount
+SchedulePremiumPayment
+SetBeneficiary
+RegisterClaim
+ApproveClaim
+RejectClaim
+LogClaimPayment
+TrackClaimStatus
+SchedulePolicyRenewal
+SetPolicyStartDate
+SetPolicyEndDate
+ValidatePolicyOwnership
+RecordOwnershipTransfer

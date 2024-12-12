@@ -1,0 +1,16 @@
+TrackComponentValueChange
+RegisterCompositionApproval
+SetIndexTransferLimit
+ValidateComponentWeight
+RecordIndexRebalance
+ConfirmComponentUpdate
+LogRebalanceApproval
+EnableDiversificationControl
+RegisterIndexTransferRequest
+TrackPortfolioYield
+SetInvestmentCompliance
+RecordMarketValueCalculation
+ApproveIndexModification
+LogPortfolioAdjustment
+TrackInvestorBalance
+EnableMarketValueAutoCalculation

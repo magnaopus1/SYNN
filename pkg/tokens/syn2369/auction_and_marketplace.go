@@ -1,0 +1,14 @@
+FinalizeAuctionTransaction
+RecordAuctionBid
+TransferAuctionOwnership
+LogMarketplaceTransaction
+RetrieveMarketplaceHistory
+SetCustomizableAppearance
+ApproveAppearanceChange
+RestrictAttributeModification
+GrantTransferPermission
+UpdateTransactionFee
+VerifyOffChainIntegrity
+TrackAttributeUpdate
+LogTransferCompletion
+AdjustEncryptionStatus

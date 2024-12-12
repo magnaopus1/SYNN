@@ -1,0 +1,15 @@
+CreateETFTokent
+SetETFMetadata
+UpdateETFPrice
+AdjustETFShareCount
+TransferETFShareOwnership
+ApproveETFShareTransfer
+ValidateETFCompliance
+SetETFDividendDistribution
+RegisterETFTransaction
+VerifyETFShareHolder
+EnableETFShareTransfer
+DisableETFShareTransfer
+TrackETFPriceHistory
+RecordETFTokenCreation
+ConfirmETFDividendPayment

@@ -1,0 +1,15 @@
+CreateDAOToken
+TransferTokenOwnership
+SetVotingPower
+ActivateMembership
+DeactivateMembership
+AdjustReputationScore
+LogTransactionDetails
+RecordVote
+DelegateVotingRights
+CreateGovernanceProposal
+UpdateProposalStatus
+RecordProposalVote
+TrackVotingHistory
+RecordImmutableTransaction
+ValidateMembershipStatus

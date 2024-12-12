@@ -1,0 +1,15 @@
+RecordPropertyAddress
+ApproveMaintenanceCompletion
+SetDepositAmount
+LogTenantFeedback
+RegisterComplianceRecord
+UpdateRentalAgreementStatus
+VerifyRentPaymentSchedule
+ConfirmLeaseEndDate
+RecordPropertyDetails
+ScheduleRentPayment
+ApproveRentalExtension
+TrackComplianceStatus
+ConfirmTenantInformation
+RecordPropertyMaintenance
+LogOwnerContactInfo

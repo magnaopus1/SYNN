@@ -1,0 +1,15 @@
+TrackTradeExecution
+RecordForexPairCreation
+ConfirmForexPairUpdate
+ApproveForexRateUpdate
+LinkForexPairWithToken
+EnableRealTimeRateTracking
+ValidateForexPairOwnership
+TrackForexOrderStatus
+SetForexPositionHedge
+LogForexTransactionDetails
+ValidatePositionUpdate
+RegisterForexComplianceRecord
+ApproveForexOrderExecution
+SetForexPriceNotification
+RecordForexPositionHistory

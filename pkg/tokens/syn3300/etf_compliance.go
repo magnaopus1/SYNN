@@ -1,0 +1,15 @@
+ValidateETFTokenStructure
+VerifyETFTokenExistence
+RegisterETFComplianceRecord
+ApproveETFAttributeUpdate
+LogETFShareTrade
+SetETFShareTradeLimit
+TrackETFTransactionHistory
+ApproveETFPriceAdjustment
+ValidateETFPriceAdjustment
+GetETFDetails
+UpdateETFComplianceStatus
+RecordETFTransferApproval
+ConfirmETFCompliance
+RegisterETFAttributeChange
+SetETFComplianceVerification

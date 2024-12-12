@@ -1,0 +1,15 @@
+RecordPriceAdjustment
+LogDataHashVerification
+ApplyComplianceRules
+RevalidateDataToken
+SetDataTokenForSale
+RemoveDataTokenFromSale
+RecordAccessValidation
+EnableTimeLock
+SetComplianceVerificationDate
+TrackComplianceAudit
+EnableAccessNotification
+ConfirmImmutableRecord
+ValidateTokenOwner
+AuthorizeAccessRights
+SetTransferPermissions

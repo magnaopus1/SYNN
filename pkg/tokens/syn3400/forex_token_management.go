@@ -1,0 +1,16 @@
+CreateForexToken
+SetForexMetadata
+UpdateForexPairRate
+LinkTokenToForexPair
+VerifyForexOwnership
+TransferForexTokenOwnership
+RecordForexTransaction
+ApproveForexTrade
+TrackForexPosition
+OpenForexPosition
+CloseForexPosition
+AdjustForexPositionSize
+SetLongShortPosition
+VerifyTradeCompliance
+SetStopLossOrder
+SetLimitOrder

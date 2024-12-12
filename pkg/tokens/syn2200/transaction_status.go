@@ -1,0 +1,15 @@
+MarkAsCompleted
+MarkAsFailed
+LogProcessingDescription
+SetProcessingFee
+LogRegulatoryStatusChange
+TrackOwnershipChangeDetails
+ApproveCrossBorderTransaction
+InitiateOwnershipTransfer
+ConfirmExecutionStatus
+RecordTransferApproval
+RetrieveOwnerHistory
+RevertOwnership
+ExecuteDeferredTransaction
+ApplyDynamicAttributes
+FinalizeTransaction

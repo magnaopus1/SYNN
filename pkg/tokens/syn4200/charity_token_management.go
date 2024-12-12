@@ -1,0 +1,15 @@
+CreateCharityToken
+SetCampaignMetadata
+UpdateDonationAmount
+LinkTokenToCampaign
+VerifyDonor
+TransferDonationOwnership
+RecordDonationTransaction
+ApproveFundAllocation
+TrackDonationUsage
+SetDonationExpiry
+EnableConditionalDonationRelease
+RegisterDonor
+RemoveDonor
+TrackDonationBalance
+ApproveDonationWithdrawal

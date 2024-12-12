@@ -1,0 +1,14 @@
+EnableForexMarginTrading
+ConfirmForexMarginCall
+RecordForexProfitAndLoss
+TrackForexOrderFulfillment
+ValidateOrderLimit
+SetForexTradingStatus
+RegisterTradeExecutionLog
+TrackOrderMatching
+RecordAutomatedMarketMaking
+RegisterForexRiskManagement
+ApproveAutomatedPositionAdjustment
+ConfirmPositionClosure
+TrackPositionPerformance
+ApproveForexPairRateUpdate

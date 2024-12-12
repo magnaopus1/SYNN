@@ -1,0 +1,15 @@
+LinkExternalMetadata
+ValidateOwnershipRecord
+ApproveEventLogEntry
+GenerateItemAttributeSummary
+ExecuteMultiSignatureApproval
+RevokeTransferPermission
+UpdateOffChainStorageLink
+SetAttributeLockStatus
+TriggerOwnershipTransfer
+CancelPendingTransfer
+EnforceMultiSigRequirement
+AddOffChainReference
+UpdateEventDescription
+LinkItemToMarketplace
+SetItemForAuction

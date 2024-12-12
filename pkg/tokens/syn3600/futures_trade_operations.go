@@ -1,0 +1,15 @@
+SetLeverageLimits
+TrackMarginCalls
+RegisterTradeOrder
+ValidateOwnershipTransfer
+ConfirmFuturesContractCompliance
+ApproveTradeExecution
+SetContractTradingLimit
+LogSpeculativePosition
+RegisterPositionClosure
+TrackContractExpiration
+ApproveFuturesTransferRequest
+ConfirmFuturesPositionUpdate
+EnableAutomatedPriceCalculation
+RecordProfitDistribution
+ApprovePriceSpeculation

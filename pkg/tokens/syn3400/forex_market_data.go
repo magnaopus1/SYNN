@@ -1,0 +1,15 @@
+TrackTradePositionLimit
+SetForexMarketOrder
+ApproveForexTokenUpdate
+ValidateForexTransactionLimit
+LogForexRateFluctuation
+SetAutomatedRateNotification
+TrackForexPairHoldings
+ConfirmHedgeActivation
+RegisterTradePairChange
+TrackForexTradingVolume
+ApproveForexTransactionRecord
+ValidateTokenPairLinking
+SetPositionLiquidationStatus
+LogForexMarketData
+ConfirmMarketDataAccuracy

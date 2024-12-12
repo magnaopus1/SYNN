@@ -1,0 +1,15 @@
+CreateAgriculturalToken
+UpdateTokenMetadata
+SetAssetType
+LinkToRealWorldAsset
+VerifyTokenOwnership
+TransferAgriculturalOwnership
+LogTokenTransaction
+ApproveAssetTransfer
+TrackTokenStatus
+SetHarvestDate
+SetExpiryDate
+EnableEscrowForToken
+RegisterTokenCertification
+AddInventoryDetails
+ApproveSupplyChainTransfer

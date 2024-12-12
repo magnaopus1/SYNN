@@ -1,0 +1,15 @@
+CreateVirtualItem
+SetItemAttributes
+UpdateItemDescription
+TransferItemOwnership
+VerifyOwnershipHistory
+AddAttributeToItem
+RemoveAttributeFromItem
+LockItemForModification
+UnlockItemForModification
+EnableMultiSignatureRequirement
+DisableMultiSignatureRequirement
+EncryptItemMetadata
+DecryptItemMetadata
+LogTransactionDetails
+RecordEvent

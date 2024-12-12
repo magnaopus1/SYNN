@@ -1,0 +1,16 @@
+CreateDataToken
+UpdateDataDescription
+TransferDataOwnership
+SetAccessRights
+AdjustDataPrice
+EnableDynamicPricing
+RecordTransaction
+TrackAuditEntry
+AddImmutableRecord
+UpdateComplianceStatus
+EncryptMetadata
+DecryptMetadata
+VerifyDataHash
+SetTokenStatus
+RecordAccessTimestamp
+ValidateAccessRights

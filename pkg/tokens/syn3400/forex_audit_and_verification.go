@@ -1,0 +1,15 @@
+TrackPositionRebalancing
+RegisterForexSettlementLog
+SetForexTokenDividend
+ApproveForexTokenBurn
+TrackForexDividendPayment
+ConfirmDividendPayoutStatus
+RegisterForexAdjustmentRecord
+ApproveAdjustmentExecution
+LogForexTradeCompliance
+TrackForexOrderFillRate
+ValidateTradeMarginLimit
+RecordForexPairAudit
+ConfirmOwnershipVerification
+RegisterComplianceCheck
+ApproveMarginAdjustment

@@ -1,0 +1,15 @@
+VerifyTransactionHash
+TrackOwnershipHistory
+ApproveTokenTransfer
+RevokeOwnershipRights
+ConfirmOwnershipStatus
+ScheduleReturnDistribution
+ApplyTimeLock
+LogComplianceCheck
+UpdateReturnLog
+TrackReturnHistory
+VerifyAssetDetails
+RegisterComplianceRecord
+FinalizeTransaction
+LogOwnershipChange
+RecordReturnCalculation

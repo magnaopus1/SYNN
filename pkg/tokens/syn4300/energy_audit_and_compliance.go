@@ -1,0 +1,15 @@
+RegisterComplianceUpdate
+EnableDetailedAllocationRecords
+ConfirmEnergyAssetAllocation
+SetTimeLockedFeature
+RegisterAllocationAudit
+ApproveEnergyClaim
+RegisterEscrowTransaction
+ConfirmComplianceStatus
+LogTransactionHistory
+ApproveEnergyAdjustment
+RegisterCertificationUpdate
+ConfirmEscrowReleaseCompliance
+SetEnergyManagementParameters
+TrackRealTimeCompliance
+ApproveEscrowFundUse

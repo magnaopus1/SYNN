@@ -1,0 +1,15 @@
+CreateBenefitToken
+SetBenefitMetadata
+UpdateBenefitAmount
+LinkBenefitToRecipient
+VerifyBenefitOwnership
+TransferBenefitOwnership
+RecordBenefitTransaction
+ApproveBenefitDisbursement
+TrackBenefitUsage
+SetBenefitExpiration
+EnableConditionalClaim
+AddBenefitRecipient
+RemoveBenefitRecipient
+TrackBenefitBalance
+ApproveBenefitWithdrawal

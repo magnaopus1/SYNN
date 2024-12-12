@@ -1,0 +1,14 @@
+LogETFAttributeUpdate
+TrackETFTokenModifications
+EnableFractionalShareTrading
+ProcessFractionalShareTrade
+TrackFractionalShareOwnership
+ApproveFractionalShareSale
+SetETFSupplyFreezeStatus
+UnfreezeETFSupply
+RecordETFFreezeHistory
+ValidateETFSupplyActivation
+ApproveETFSupplyFreeze
+RegisterETFModificationHistory
+SetETFShareEligibility
+LogETFTokenDeactivation

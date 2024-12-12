@@ -1,0 +1,15 @@
+ValidateComplianceStatus
+RecordClaimSubmission
+VerifyClaimBeneficiary
+SchedulePremiumAdjustment
+LogClaimRejection
+ConfirmPremiumPaymentStatus
+AdjustClaimStatus
+RecordPolicyStartDate
+SetPolicyActiveStatus
+VerifyClaimCompliance
+ApproveOwnershipChange
+TrackPremiumPaymentHistory
+RecordBeneficiaryChange
+LogPolicyEndDate
+ConfirmVestingEligibility

@@ -1,0 +1,15 @@
+SetRiskManagementRules
+LogIndexCreation
+ApproveRebalanceRequest
+RegisterIndexValueChange
+EnableAutomatedRebalancing
+SetDiversificationLimit
+ConfirmIndexValueTracking
+LogComponentAddition
+ApproveComponentRemoval
+TrackRebalanceHistory
+RecordIndexHoldings
+SetComponentWeight
+RegisterInvestorPortfolio
+EnableIndexCompositionChange
+ApproveAssetAddition

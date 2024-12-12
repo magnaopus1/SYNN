@@ -1,0 +1,16 @@
+CreatePensionToken
+TransferPensionOwnership
+SetPensionBalance
+ConfigureVestingSchedule
+ActivatePensionToken
+DeactivatePensionToken
+LogPensionTransaction
+SetPortabilityStatus
+RegisterComplianceRecord
+AdjustWithdrawalLimits
+RecordVestingEvent
+ValidateOwnershipStatus
+ApprovePensionTransfer
+RecordComplianceAction
+SetMaturityDate
+ConfirmPensionActiveStatus

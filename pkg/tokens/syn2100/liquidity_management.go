@@ -1,0 +1,16 @@
+CreateLiquidityPool
+JoinLiquidityPool
+LeaveLiquidityPool
+TradeTokenInLiquidityPool
+DistributeRevenue
+RecordRevenuePayout
+GenerateAuditTrail
+QueryAuditTrail
+SetDynamicAttributes
+RestrictTokenTransfer
+ApproveTokenTransfer
+SchedulePayout
+TriggerAutoSettlement
+RecordComplianceCheck
+VerifyTokenOwnership
+InitiateTokenBurn

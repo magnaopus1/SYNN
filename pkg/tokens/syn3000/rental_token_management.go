@@ -1,0 +1,16 @@
+CreateRentalToken
+SetRentalAgreementDetails
+UpdateMonthlyRent
+AddPropertyDetails
+SetLeaseStartDate
+SetLeaseEndDate
+RecordRentPayment
+RegisterSecurityDeposit
+TransferTokenOwnership
+LogPaymentHistory
+ActivateRentalToken
+DeactivateRentalToken
+TrackDepositRefund
+VerifyPropertyOwnership
+UpdateLastModifiedDate
+RecordLatePayment

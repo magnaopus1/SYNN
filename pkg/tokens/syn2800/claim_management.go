@@ -1,0 +1,15 @@
+ApproveClaimPayment
+TrackOwnershipHistory
+RegisterPolicyCompliance
+SetPolicyTerms
+VerifyEndDate
+LogPolicyStatusChange
+TrackClaimHistory
+ConfirmPolicyDetails
+UpdateBeneficiaryDetails
+ScheduleBeneficiaryVerification
+ApprovePolicyAmendment
+ConfirmCoverageAmount
+LogPremiumAdjustment
+RecordPolicyRenewal
+TrackPolicyActivity

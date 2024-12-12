@@ -1,0 +1,15 @@
+CreateIndexToken
+SetIndexMetadata
+UpdateMarketValue
+LinkIndexToBasket
+VerifyIndexOwnership
+TransferIndexOwnership
+RecordIndexTransaction
+ApproveIndexTrade
+TrackIndexValue
+EnableRebalanceMechanism
+AddComponentToIndex
+RemoveComponentFromIndex
+TrackComponentPerformance
+UpdateComponentWeight
+CalculateIndexValue

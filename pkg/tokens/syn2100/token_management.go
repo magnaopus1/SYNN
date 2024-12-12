@@ -1,0 +1,16 @@
+IssueToken
+TransferOwnership
+SetTokenStatus
+UpdateDiscountRate
+GetTokenByID
+CalculateEarlyPayment
+SetDueDate
+UpdateCollateralStatus
+AddAuditLog
+VerifyDocument
+EnableRestrictedTransfers
+RequireApproval
+UpdateRevenueShareModel
+SetRiskRating
+EncryptMetadata
+DecryptMetadata

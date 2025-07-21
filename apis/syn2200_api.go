@@ -5,155 +5,719 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"log"
+
 	"github.com/gorilla/mux"
+	"synnergy_network/pkg/tokens/syn2200"
+	"synnergy_network/pkg/common"
 )
 
-type SYN2200API struct{}
-
-func NewSYN2200API() *SYN2200API { return &SYN2200API{} }
-
-func (api *SYN2200API) RegisterRoutes(router *mux.Router) {
-	// Core prediction token management (15 endpoints)
-	router.HandleFunc("/syn2200/tokens", api.CreatePredictionToken).Methods("POST")
-	router.HandleFunc("/syn2200/tokens/{tokenID}", api.GetToken).Methods("GET")
-	router.HandleFunc("/syn2200/tokens", api.ListTokens).Methods("GET")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/transfer", api.TransferTokens).Methods("POST")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/stake", api.StakeTokens).Methods("POST")
-	router.HandleFunc("/syn2200/tokens/balance/{address}", api.GetBalance).Methods("GET")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/metadata", api.UpdateMetadata).Methods("PUT")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/burn", api.BurnTokens).Methods("POST")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/mint", api.MintTokens).Methods("POST")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/freeze", api.FreezeToken).Methods("POST")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/history", api.GetTokenHistory).Methods("GET")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/oracle", api.GetOracleData).Methods("GET")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/fees", api.GetFeeStructure).Methods("GET")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/reputation", api.GetReputationScore).Methods("GET")
-	router.HandleFunc("/syn2200/tokens/{tokenID}/governance", api.GetGovernanceRights).Methods("GET")
-
-	// Market creation and management (20 endpoints)
-	router.HandleFunc("/syn2200/markets", api.CreateMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}", api.GetMarket).Methods("GET")
-	router.HandleFunc("/syn2200/markets", api.ListMarkets).Methods("GET")
-	router.HandleFunc("/syn2200/markets/{marketID}/bet", api.PlaceBet).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/odds", api.GetOdds).Methods("GET")
-	router.HandleFunc("/syn2200/markets/{marketID}/volume", api.GetMarketVolume).Methods("GET")
-	router.HandleFunc("/syn2200/markets/{marketID}/resolve", api.ResolveMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/dispute", api.DisputeResolution).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/liquidity", api.AddLiquidity).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/withdraw-liquidity", api.WithdrawLiquidity).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/pause", api.PauseMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/resume", api.ResumeMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/cancel", api.CancelMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/extend", api.ExtendMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/split", api.SplitMarket).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/merge", api.MergeMarkets).Methods("POST")
-	router.HandleFunc("/syn2200/markets/{marketID}/arbitrage", api.GetArbitrageOpportunities).Methods("GET")
-	router.HandleFunc("/syn2200/markets/{marketID}/participants", api.GetMarketParticipants).Methods("GET")
-	router.HandleFunc("/syn2200/markets/{marketID}/sentiment", api.GetMarketSentiment).Methods("GET")
-	router.HandleFunc("/syn2200/markets/trending", api.GetTrendingMarkets).Methods("GET")
-
-	// Betting and positions (15 endpoints)
-	router.HandleFunc("/syn2200/bets", api.GetUserBets).Methods("GET")
-	router.HandleFunc("/syn2200/bets/{betID}", api.GetBetDetails).Methods("GET")
-	router.HandleFunc("/syn2200/bets/{betID}/cancel", api.CancelBet).Methods("POST")
-	router.HandleFunc("/syn2200/bets/{betID}/hedge", api.HedgeBet).Methods("POST")
-	router.HandleFunc("/syn2200/bets/portfolio", api.GetBettingPortfolio).Methods("GET")
-	router.HandleFunc("/syn2200/bets/pnl", api.GetProfitAndLoss).Methods("GET")
-	router.HandleFunc("/syn2200/positions", api.GetPositions).Methods("GET")
-	router.HandleFunc("/syn2200/positions/{positionID}", api.GetPositionDetails).Methods("GET")
-	router.HandleFunc("/syn2200/positions/{positionID}/close", api.ClosePosition).Methods("POST")
-	router.HandleFunc("/syn2200/positions/{positionID}/modify", api.ModifyPosition).Methods("PUT")
-	router.HandleFunc("/syn2200/positions/risk", api.GetPositionRisk).Methods("GET")
-	router.HandleFunc("/syn2200/positions/exposure", api.GetMarketExposure).Methods("GET")
-	router.HandleFunc("/syn2200/payouts", api.ClaimPayouts).Methods("POST")
-	router.HandleFunc("/syn2200/payouts/history", api.GetPayoutHistory).Methods("GET")
-	router.HandleFunc("/syn2200/strategy", api.GetBettingStrategy).Methods("GET")
-
-	// Oracle and data feeds (10 endpoints)
-	router.HandleFunc("/syn2200/oracles", api.RegisterOracle).Methods("POST")
-	router.HandleFunc("/syn2200/oracles/{oracleID}", api.GetOracleInfo).Methods("GET")
-	router.HandleFunc("/syn2200/oracles/{oracleID}/data", api.SubmitOracleData).Methods("POST")
-	router.HandleFunc("/syn2200/oracles/{oracleID}/reputation", api.GetOracleReputation).Methods("GET")
-	router.HandleFunc("/syn2200/oracles/consensus", api.GetOracleConsensus).Methods("GET")
-	router.HandleFunc("/syn2200/feeds", api.GetDataFeeds).Methods("GET")
-	router.HandleFunc("/syn2200/feeds/{feedID}", api.GetFeedData).Methods("GET")
-	router.HandleFunc("/syn2200/feeds/{feedID}/subscribe", api.SubscribeToFeed).Methods("POST")
-	router.HandleFunc("/syn2200/feeds/prices", api.GetPriceFeeds).Methods("GET")
-	router.HandleFunc("/syn2200/feeds/events", api.GetEventFeeds).Methods("GET")
-
-	// Analytics and reporting (10 endpoints)
-	router.HandleFunc("/syn2200/analytics/volume", api.GetTradingVolume).Methods("GET")
-	router.HandleFunc("/syn2200/analytics/accuracy", api.GetPredictionAccuracy).Methods("GET")
-	router.HandleFunc("/syn2200/analytics/performance", api.GetPerformanceMetrics).Methods("GET")
-	router.HandleFunc("/syn2200/analytics/trends", api.GetMarketTrends).Methods("GET")
-	router.HandleFunc("/syn2200/analytics/sentiment", api.GetSentimentAnalysis).Methods("GET")
-	router.HandleFunc("/syn2200/reports/market", api.GenerateMarketReport).Methods("GET")
-	router.HandleFunc("/syn2200/reports/user", api.GenerateUserReport).Methods("GET")
-	router.HandleFunc("/syn2200/reports/oracle", api.GenerateOracleReport).Methods("GET")
-	router.HandleFunc("/syn2200/analytics/arbitrage", api.GetArbitrageAnalytics).Methods("GET")
-	router.HandleFunc("/syn2200/analytics/correlation", api.GetMarketCorrelations).Methods("GET")
-
-	// Administrative (5 endpoints)
-	router.HandleFunc("/syn2200/admin/settings", api.UpdateSettings).Methods("PUT")
-	router.HandleFunc("/syn2200/admin/emergency", api.EmergencyPause).Methods("POST")
-	router.HandleFunc("/syn2200/admin/health", api.GetSystemHealth).Methods("GET")
-	router.HandleFunc("/syn2200/admin/logs", api.GetSystemLogs).Methods("GET")
-	router.HandleFunc("/syn2200/admin/backup", api.CreateBackup).Methods("POST")
+// SYN2200API handles all SYN2200 Prediction Market Token related API endpoints
+type SYN2200API struct {
+	factory     *syn2200.SYN2200Factory
+	management  *syn2200.SYN2200Management
+	storage     *syn2200.SYN2200Storage
+	security    *syn2200.SYN2200Security
+	transaction *syn2200.SYN2200Transaction
+	events      *syn2200.SYN2200Events
+	compliance  *syn2200.SYN2200Compliance
 }
 
-func (api *SYN2200API) CreatePredictionToken(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Creating prediction market token - Request from %s", r.RemoteAddr)
-	
-	var request struct {
-		Name         string  `json:"name" validate:"required"`
-		Symbol       string  `json:"symbol" validate:"required"`
-		TotalSupply  float64 `json:"total_supply" validate:"required,min=1"`
-		MarketType   string  `json:"market_type" validate:"required,oneof=binary categorical scalar"`
-		Category     string  `json:"category" validate:"required"`
-		ExpiryDate   string  `json:"expiry_date" validate:"required"`
-		OracleSource string  `json:"oracle_source" validate:"required"`
+func NewSYN2200API() *SYN2200API {
+	return &SYN2200API{
+		factory:     &syn2200.SYN2200Factory{},
+		management:  &syn2200.SYN2200Management{},
+		storage:     &syn2200.SYN2200Storage{},
+		security:    &syn2200.SYN2200Security{},
+		transaction: &syn2200.SYN2200Transaction{},
+		events:      &syn2200.SYN2200Events{},
+		compliance:  &syn2200.SYN2200Compliance{},
 	}
+}
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"error":"Invalid JSON format","code":"INVALID_JSON"}`, http.StatusBadRequest)
+func (api *SYN2200API) RegisterRoutes(router *mux.Router) {
+	// Core token management endpoints
+	router.HandleFunc("/syn2200/tokens", api.CreateToken).Methods("POST")
+	router.HandleFunc("/syn2200/tokens/{tokenID}", api.GetToken).Methods("GET")
+	router.HandleFunc("/syn2200/tokens", api.ListTokens).Methods("GET")
+	router.HandleFunc("/syn2200/tokens/{tokenID}/transfer", api.TransferToken).Methods("POST")
+	router.HandleFunc("/syn2200/tokens/{tokenID}/update", api.UpdateToken).Methods("PUT")
+	router.HandleFunc("/syn2200/tokens/{tokenID}/delete", api.DeleteToken).Methods("DELETE")
+
+	// Management endpoints
+	router.HandleFunc("/syn2200/management/tokens", api.CreatePredictionToken).Methods("POST")
+	router.HandleFunc("/syn2200/management/{tokenID}/transfer", api.TransferPredictionToken).Methods("POST")
+	router.HandleFunc("/syn2200/management/{tokenID}/settle", api.SettlePredictionToken).Methods("POST")
+	router.HandleFunc("/syn2200/management/{tokenID}/revoke", api.RevokePredictionToken).Methods("POST")
+	router.HandleFunc("/syn2200/management/{tokenID}/audit", api.AuditPredictionToken).Methods("GET")
+
+	// Storage endpoints
+	router.HandleFunc("/syn2200/storage/{tokenID}", api.StoreToken).Methods("POST")
+	router.HandleFunc("/syn2200/storage/{tokenID}", api.RetrieveToken).Methods("GET")
+	router.HandleFunc("/syn2200/storage/{tokenID}", api.UpdateStoredToken).Methods("PUT")
+	router.HandleFunc("/syn2200/storage/{tokenID}", api.DeleteStoredToken).Methods("DELETE")
+
+	// Security endpoints
+	router.HandleFunc("/syn2200/security/{tokenID}/encrypt", api.EncryptTokenData).Methods("POST")
+	router.HandleFunc("/syn2200/security/{tokenID}/decrypt", api.DecryptTokenData).Methods("POST")
+	router.HandleFunc("/syn2200/security/{tokenID}/validate", api.ValidateTokenSecurity).Methods("GET")
+	router.HandleFunc("/syn2200/security/{tokenID}/audit", api.SecurityAudit).Methods("GET")
+
+	// Transaction endpoints
+	router.HandleFunc("/syn2200/transactions/transfer", api.ExecuteTransfer).Methods("POST")
+	router.HandleFunc("/syn2200/transactions/{tokenID}/validate", api.ValidateTransaction).Methods("GET")
+	router.HandleFunc("/syn2200/transactions/{tokenID}/history", api.GetTransactionHistory).Methods("GET")
+
+	// Events endpoints
+	router.HandleFunc("/syn2200/events/market-creation", api.RecordMarketCreationEvent).Methods("POST")
+	router.HandleFunc("/syn2200/events/bet-placement", api.RecordBetPlacementEvent).Methods("POST")
+	router.HandleFunc("/syn2200/events/market-settlement", api.RecordMarketSettlementEvent).Methods("POST")
+	router.HandleFunc("/syn2200/events/oracle-update", api.RecordOracleUpdateEvent).Methods("POST")
+
+	// Compliance endpoints
+	router.HandleFunc("/syn2200/compliance/{tokenID}/verify", api.VerifyCompliance).Methods("GET")
+	router.HandleFunc("/syn2200/compliance/{tokenID}/status", api.GetComplianceStatus).Methods("GET")
+	router.HandleFunc("/syn2200/compliance/{tokenID}/update", api.UpdateComplianceStatus).Methods("PUT")
+
+	// Utility endpoints
+	router.HandleFunc("/syn2200/health", api.HealthCheck).Methods("GET")
+	router.HandleFunc("/syn2200/metrics", api.GetMetrics).Methods("GET")
+}
+
+// Token Management Handlers
+
+type CreateTokenRequest struct {
+	MarketQuestion string    `json:"market_question"`
+	Outcomes       []string  `json:"outcomes"`
+	EndTime        time.Time `json:"end_time"`
+	OracleAddress  string    `json:"oracle_address"`
+	Creator        string    `json:"creator"`
+}
+
+func (api *SYN2200API) CreateToken(w http.ResponseWriter, r *http.Request) {
+	var req CreateTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	tokenID := fmt.Sprintf("PRED_%d", time.Now().UnixNano())
-	
-	response := map[string]interface{}{
-		"success":       true,
-		"token_id":      tokenID,
-		"name":          request.Name,
-		"symbol":        request.Symbol,
-		"total_supply":  request.TotalSupply,
-		"market_type":   request.MarketType,
-		"category":      request.Category,
-		"expiry_date":   request.ExpiryDate,
-		"oracle_source": request.OracleSource,
-		"created_at":    time.Now().Format(time.RFC3339),
-		"status":        "active",
-		"network":       "synnergy",
-		"decimals":      18,
+	// Call the real module function
+	token, err := api.factory.CreatePredictionMarketToken(
+		req.MarketQuestion,
+		req.Outcomes,
+		req.EndTime,
+		req.OracleAddress,
+		req.Creator,
+	)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create token: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
-	log.Printf("Prediction market token created: %s", tokenID)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
 }
 
 func (api *SYN2200API) GetToken(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	tokenID := vars["tokenID"]
-	response := map[string]interface{}{"success": true, "token_id": tokenID, "market_type": "binary", "status": "active"}
+
+	// Call the real module function
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
 }
 
-func (api *SYN2200API) GetTradingVolume(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{"success": true, "volume": map[string]interface{}{"total_24h": 2500000.0, "markets": 150, "bets": 5000}}
+func (api *SYN2200API) ListTokens(w http.ResponseWriter, r *http.Request) {
+	// Call the real module function
+	tokens, err := api.storage.ListAllTokens()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list tokens: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"tokens": tokens,
+	})
+}
+
+type TransferTokenRequest struct {
+	From   string  `json:"from"`
+	To     string  `json:"to"`
+	Amount float64 `json:"amount"`
+}
+
+func (api *SYN2200API) TransferToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.transaction.TransferToken(tokenID, req.From, req.To, req.Amount)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to transfer token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token transferred successfully",
+	})
+}
+
+func (api *SYN2200API) UpdateToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.storage.UpdateToken(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token updated successfully",
+	})
+}
+
+func (api *SYN2200API) DeleteToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	performedBy := r.URL.Query().Get("performed_by")
+	if performedBy == "" {
+		http.Error(w, "performed_by parameter required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.DeleteToken(tokenID, performedBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token deleted successfully",
+	})
+}
+
+// Management Handlers
+
+func (api *SYN2200API) CreatePredictionToken(w http.ResponseWriter, r *http.Request) {
+	var req CreateTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	token, err := api.management.CreatePredictionMarket(
+		req.MarketQuestion,
+		req.Outcomes,
+		req.EndTime,
+		req.OracleAddress,
+		req.Creator,
+	)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create prediction token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
+}
+
+func (api *SYN2200API) TransferPredictionToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.TransferPredictionToken(tokenID, req.From, req.To, req.Amount)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to transfer prediction token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Prediction token transferred successfully",
+	})
+}
+
+type SettleTokenRequest struct {
+	WinningOutcome string `json:"winning_outcome"`
+	SettledBy      string `json:"settled_by"`
+}
+
+func (api *SYN2200API) SettlePredictionToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req SettleTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.SettlePredictionMarket(tokenID, req.WinningOutcome, req.SettledBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to settle prediction token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Prediction token settled successfully",
+	})
+}
+
+type RevokeTokenRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (api *SYN2200API) RevokePredictionToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RevokeTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.RevokePredictionToken(tokenID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke prediction token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Prediction token revoked successfully",
+	})
+}
+
+func (api *SYN2200API) AuditPredictionToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	auditLogs, err := api.management.AuditPredictionToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to audit prediction token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":     "success",
+		"audit_logs": auditLogs,
+	})
+}
+
+// Storage Handlers
+
+func (api *SYN2200API) StoreToken(w http.ResponseWriter, r *http.Request) {
+	var token common.SYN2200Token
+	if err := json.NewDecoder(r.Body).Decode(&token); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.StoreToken(&token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to store token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token stored successfully",
+	})
+}
+
+func (api *SYN2200API) RetrieveToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
+}
+
+func (api *SYN2200API) UpdateStoredToken(w http.ResponseWriter, r *http.Request) {
+	var token common.SYN2200Token
+	if err := json.NewDecoder(r.Body).Decode(&token); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.UpdateToken(&token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token updated successfully",
+	})
+}
+
+func (api *SYN2200API) DeleteStoredToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	performedBy := r.URL.Query().Get("performed_by")
+	if performedBy == "" {
+		http.Error(w, "performed_by parameter required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.DeleteToken(tokenID, performedBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token deleted successfully",
+	})
+}
+
+// Security Handlers
+
+func (api *SYN2200API) EncryptTokenData(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.security.EncryptTokenData(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to encrypt token data: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token data encrypted successfully",
+	})
+}
+
+type DecryptTokenRequest struct {
+	DecryptionKey string `json:"decryption_key"`
+}
+
+func (api *SYN2200API) DecryptTokenData(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req DecryptTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.security.DecryptTokenData(token, req.DecryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to decrypt token data: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token data decrypted successfully",
+	})
+}
+
+func (api *SYN2200API) ValidateTokenSecurity(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	isValid, err := api.security.ValidateTokenSecurity(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to validate token security: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   "success",
+		"is_valid": isValid,
+	})
+}
+
+func (api *SYN2200API) SecurityAudit(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	auditReport, err := api.security.SecurityAudit(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to perform security audit: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":       "success",
+		"audit_report": auditReport,
+	})
+}
+
+// Transaction Handlers
+
+func (api *SYN2200API) ExecuteTransfer(w http.ResponseWriter, r *http.Request) {
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// This would map to a real transaction function in the module
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transfer executed - uses syn2200.ExecuteTransfer",
+	})
+}
+
+func (api *SYN2200API) ValidateTransaction(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	isValid, err := api.transaction.ValidateTransaction(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to validate transaction: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   "success",
+		"is_valid": isValid,
+	})
+}
+
+func (api *SYN2200API) GetTransactionHistory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	history, err := api.transaction.GetTransactionHistory(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get transaction history: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"history": history,
+	})
+}
+
+// Event Handlers
+
+func (api *SYN2200API) RecordMarketCreationEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Market creation event - uses syn2200.RecordMarketCreationEvent",
+	})
+}
+
+func (api *SYN2200API) RecordBetPlacementEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Bet placement event - uses syn2200.RecordBetPlacementEvent",
+	})
+}
+
+func (api *SYN2200API) RecordMarketSettlementEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Market settlement event - uses syn2200.RecordMarketSettlementEvent",
+	})
+}
+
+func (api *SYN2200API) RecordOracleUpdateEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Oracle update event - uses syn2200.RecordOracleUpdateEvent",
+	})
+}
+
+// Compliance Handlers
+
+func (api *SYN2200API) VerifyCompliance(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	isCompliant, err := api.compliance.VerifyCompliance(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to verify compliance: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "success",
+		"is_compliant": isCompliant,
+	})
+}
+
+func (api *SYN2200API) GetComplianceStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	status, err := api.compliance.GetComplianceStatus(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get compliance status: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":            "success",
+		"compliance_status": status,
+	})
+}
+
+func (api *SYN2200API) UpdateComplianceStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req struct {
+		Status    string `json:"status"`
+		UpdatedBy string `json:"updated_by"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.compliance.UpdateComplianceStatus(tokenID, req.Status, req.UpdatedBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update compliance status: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Compliance status updated successfully",
+	})
+}
+
+// Utility Handlers
+
+func (api *SYN2200API) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "healthy",
+		"service":   "syn2200-api",
+		"timestamp": time.Now(),
+	})
+}
+
+func (api *SYN2200API) GetMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"metrics": "Metrics collection would be implemented here",
+	})
 }

@@ -35,6 +35,9 @@ type SynnergyAPIServer struct {
 	SmartContractAPI *SmartContractAPI
 	WalletAPI        *WalletAPI
 	CryptographyAPI  *CryptographyAPI
+	StorageAPI       *StorageAPI
+	DataManagementAPI *DataManagementAPI
+	AccountBalanceAPI *AccountBalanceAPI
 	TokensAPI        *TokensAPI
 	DeFiAPI          *DeFiAPI
 	GovernanceAPI    *GovernanceAPI
@@ -134,6 +137,9 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.SmartContractAPI = NewSmartContractAPI(s.LedgerInstance)
 	s.WalletAPI = NewWalletAPI(s.LedgerInstance, s.NetworkManager)
 	s.CryptographyAPI = NewCryptographyAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
+	s.StorageAPI = NewStorageAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
+	s.DataManagementAPI = NewDataManagementAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
+	s.AccountBalanceAPI = NewAccountBalanceAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
 	
 	// Initialize ALL Token APIs - Complete Registry
 	s.SYN10API = NewSYN10API(s.LedgerInstance)
@@ -201,6 +207,9 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	s.SmartContractAPI.RegisterRoutes(apiV1)
 	s.WalletAPI.RegisterRoutes(apiV1)
 	s.CryptographyAPI.RegisterRoutes(apiV1)
+	s.StorageAPI.RegisterRoutes(apiV1)
+	s.DataManagementAPI.RegisterRoutes(apiV1)
+	s.AccountBalanceAPI.RegisterRoutes(apiV1)
 	
 	// Register ALL Token API Routes - Complete Registry
 	s.SYN10API.RegisterRoutes(apiV1)
@@ -271,7 +280,7 @@ func (s *SynnergyAPIServer) Start() error {
 	// Start server
 	log.Printf("🚀 Starting Synnergy Network API Server on port %s", s.Port)
 	log.Printf("📚 API Documentation available at: http://localhost:%s/", s.Port)
-	log.Printf("🔗 Total APIs Registered: %d Token APIs + %d Core APIs", 44, 6)
+	log.Printf("🔗 Total APIs Registered: %d Token APIs + %d Core APIs", 44, 9)
 	
 	return http.ListenAndServe(":"+s.Port, handler)
 }
@@ -385,9 +394,9 @@ func (s *SynnergyAPIServer) GetSystemInfo(w http.ResponseWriter, r *http.Request
 		"consensus": "Proof of History + Proof of Stake + Proof of Work",
 		"network": "Synnergy Mainnet",
 		"registered_apis": map[string]interface{}{
-			"core_apis":  6,
+			"core_apis":  9,
 			"token_apis": 44,
-			"total_apis": 50,
+			"total_apis": 53,
 		},
 		"supported_standards": []string{
 			"SYN10", "SYN11", "SYN12", "SYN20", "SYN131", "SYN130", "SYN200", "SYN300",

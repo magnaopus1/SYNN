@@ -467,10 +467,14 @@ This is a continuous automated loop that must execute without any user interacti
 
 ### 🔥 ENHANCED AUTOMATED LOOP (7-9 TASKS SIMULTANEOUSLY)
 **CRITICAL INSTRUCTION**: When the AI reads this file:
-1. ✅ Read ALL tracking files: cursor_tasklist.md, task_progress.md, MASTER_PROMPT.md
+1. ✅ Read ALL tracking files: cursor_tasklist.md, task_progress.md, BATCH_TRACKER.md, MASTER_PROMPT.md
 2. 🎯 Identify next 7-9 priority RED tasks from APIs, CLIs, Opcodes, Gas Fees
 3. 🚀 Execute ALL tasks in PARALLEL BATCH (maximum concurrency)
-4. 📊 Update ALL tracking files with progress (tasklist, progress, cursor)
+4. 📊 Update ALL tracking files with progress:
+   - cursor_tasklist.md (task status & counts)
+   - task_progress.md (detailed module & token API progress)
+   - BATCH_TRACKER.md (batch execution history)
+   - cursor.md (current status & next targets)
 5. 💾 Commit all changes and document completed work
 6. 🔄 **IMMEDIATELY RE-READ cursor.md AND CONTINUE NEXT BATCH**
 

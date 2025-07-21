@@ -6,317 +6,1007 @@ import (
 	"net/http"
 	"time"
 	"log"
-	"strconv"
+
 	"github.com/gorilla/mux"
+	"synnergy_network/pkg/tokens/syn1900"
+	"synnergy_network/pkg/common"
 )
 
-type SYN1900API struct{}
+// SYN1900API handles all SYN1900 Loyalty Program Token related API endpoints
+type SYN1900API struct {
+	factory     *syn1900.TokenFactory
+	storage     *syn1900.TokenStorageService
+	security    *syn1900.SecurityService
+	management  *syn1900.ManagementService
+	transaction *syn1900.TokenTransactionService
+	events      *syn1900.EventManager
+	compliance  *syn1900.ComplianceManager
+}
 
-func NewSYN1900API() *SYN1900API { return &SYN1900API{} }
+func NewSYN1900API() *SYN1900API {
+	factory := &syn1900.TokenFactory{}
+	storage := &syn1900.TokenStorageService{}
+	security := &syn1900.SecurityService{}
+	management := &syn1900.ManagementService{}
+	transaction := &syn1900.TokenTransactionService{}
+	events := &syn1900.EventManager{}
+	compliance := &syn1900.ComplianceManager{}
+
+	return &SYN1900API{
+		factory:     factory,
+		storage:     storage,
+		security:    security,
+		management:  management,
+		transaction: transaction,
+		events:      events,
+		compliance:  compliance,
+	}
+}
 
 func (api *SYN1900API) RegisterRoutes(router *mux.Router) {
-	// Core loyalty token management (15 endpoints)
-	router.HandleFunc("/syn1900/tokens", api.CreateLoyaltyToken).Methods("POST")
+	// Core token management endpoints
+	router.HandleFunc("/syn1900/tokens", api.CreateToken).Methods("POST")
 	router.HandleFunc("/syn1900/tokens/{tokenID}", api.GetToken).Methods("GET")
 	router.HandleFunc("/syn1900/tokens", api.ListTokens).Methods("GET")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/transfer", api.TransferTokens).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/redeem", api.RedeemPoints).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/balance/{address}", api.GetBalance).Methods("GET")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/earn", api.EarnPoints).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/expire", api.SetExpiration).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/tier", api.UpdateTier).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/boost", api.ActivateBooster).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/history", api.GetTransactionHistory).Methods("GET")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/metadata", api.UpdateMetadata).Methods("PUT")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/burn", api.BurnTokens).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/mint", api.MintTokens).Methods("POST")
-	router.HandleFunc("/syn1900/tokens/{tokenID}/freeze", api.FreezeAccount).Methods("POST")
+	router.HandleFunc("/syn1900/tokens/{tokenID}/revoke", api.RevokeToken).Methods("POST")
+	router.HandleFunc("/syn1900/tokens/{tokenID}/transfer", api.TransferToken).Methods("POST")
+	router.HandleFunc("/syn1900/tokens/{tokenID}/update", api.UpdateToken).Methods("PUT")
+	router.HandleFunc("/syn1900/tokens/{tokenID}/delete", api.DeleteToken).Methods("DELETE")
 
-	// Loyalty program management (20 endpoints)
-	router.HandleFunc("/syn1900/programs", api.CreateLoyaltyProgram).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}", api.GetProgram).Methods("GET")
-	router.HandleFunc("/syn1900/programs", api.ListPrograms).Methods("GET")
-	router.HandleFunc("/syn1900/programs/{programID}/join", api.JoinProgram).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/leave", api.LeaveProgram).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/rules", api.UpdateProgramRules).Methods("PUT")
-	router.HandleFunc("/syn1900/programs/{programID}/tiers", api.ManageTiers).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/rewards", api.ManageRewards).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/members", api.GetMembers).Methods("GET")
-	router.HandleFunc("/syn1900/programs/{programID}/analytics", api.GetProgramAnalytics).Methods("GET")
-	router.HandleFunc("/syn1900/programs/{programID}/campaigns", api.CreateCampaign).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/partnerships", api.ManagePartnerships).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/promotions", api.CreatePromotion).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/surveys", api.CreateSurvey).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/gamification", api.ManageGamification).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/notifications", api.SendNotifications).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/referrals", api.ManageReferrals).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/seasonal", api.CreateSeasonalOffer).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/pause", api.PauseProgram).Methods("POST")
-	router.HandleFunc("/syn1900/programs/{programID}/archive", api.ArchiveProgram).Methods("POST")
+	// Management endpoints
+	router.HandleFunc("/syn1900/management/{tokenID}/credit/transfer", api.TransferCredit).Methods("POST")
+	router.HandleFunc("/syn1900/management/{tokenID}/credit/revoke", api.RevokeCredit).Methods("POST")
+	router.HandleFunc("/syn1900/management/{tokenID}/credit/validate", api.ValidateCredit).Methods("GET")
+	router.HandleFunc("/syn1900/management/{tokenID}/metadata", api.UpdateMetadata).Methods("PUT")
+	router.HandleFunc("/syn1900/management/{tokenID}/renew", api.RenewCredit).Methods("POST")
+	router.HandleFunc("/syn1900/management/{tokenID}/summary", api.GenerateSummary).Methods("GET")
 
-	// Reward management (15 endpoints)
-	router.HandleFunc("/syn1900/rewards", api.CreateReward).Methods("POST")
-	router.HandleFunc("/syn1900/rewards/{rewardID}", api.GetReward).Methods("GET")
-	router.HandleFunc("/syn1900/rewards", api.ListRewards).Methods("GET")
-	router.HandleFunc("/syn1900/rewards/{rewardID}/claim", api.ClaimReward).Methods("POST")
-	router.HandleFunc("/syn1900/rewards/{rewardID}/available", api.CheckAvailability).Methods("GET")
-	router.HandleFunc("/syn1900/rewards/categories", api.GetRewardCategories).Methods("GET")
-	router.HandleFunc("/syn1900/rewards/trending", api.GetTrendingRewards).Methods("GET")
-	router.HandleFunc("/syn1900/rewards/personalized", api.GetPersonalizedRewards).Methods("GET")
-	router.HandleFunc("/syn1900/rewards/{rewardID}/reviews", api.GetRewardReviews).Methods("GET")
-	router.HandleFunc("/syn1900/rewards/{rewardID}/rate", api.RateReward).Methods("POST")
-	router.HandleFunc("/syn1900/rewards/wishlist", api.ManageWishlist).Methods("POST")
-	router.HandleFunc("/syn1900/rewards/gift", api.GiftReward).Methods("POST")
-	router.HandleFunc("/syn1900/rewards/bulk-redeem", api.BulkRedeem).Methods("POST")
-	router.HandleFunc("/syn1900/rewards/catalog", api.UpdateCatalog).Methods("PUT")
-	router.HandleFunc("/syn1900/rewards/inventory", api.ManageInventory).Methods("POST")
+	// Security endpoints
+	router.HandleFunc("/syn1900/security/{tokenID}/verify-signature", api.VerifyDigitalSignature).Methods("POST")
+	router.HandleFunc("/syn1900/security/{tokenID}/encrypt", api.EncryptTokenMetadata).Methods("POST")
+	router.HandleFunc("/syn1900/security/{tokenID}/decrypt", api.DecryptTokenMetadata).Methods("POST")
+	router.HandleFunc("/syn1900/security/{tokenID}/hash", api.HashToken).Methods("GET")
+	router.HandleFunc("/syn1900/security/{tokenID}/validate-integrity", api.ValidateTokenIntegrity).Methods("POST")
+	router.HandleFunc("/syn1900/security/{tokenID}/revoke", api.RevokeTokenSecurity).Methods("POST")
 
-	// Customer engagement (10 endpoints)
-	router.HandleFunc("/syn1900/engagement/activities", api.TrackActivity).Methods("POST")
-	router.HandleFunc("/syn1900/engagement/challenges", api.CreateChallenge).Methods("POST")
-	router.HandleFunc("/syn1900/engagement/achievements", api.GetAchievements).Methods("GET")
-	router.HandleFunc("/syn1900/engagement/leaderboard", api.GetLeaderboard).Methods("GET")
-	router.HandleFunc("/syn1900/engagement/badges", api.ManageBadges).Methods("POST")
-	router.HandleFunc("/syn1900/engagement/streaks", api.TrackStreaks).Methods("GET")
-	router.HandleFunc("/syn1900/engagement/social", api.SocialShare).Methods("POST")
-	router.HandleFunc("/syn1900/engagement/feedback", api.CollectFeedback).Methods("POST")
-	router.HandleFunc("/syn1900/engagement/milestones", api.TrackMilestones).Methods("GET")
-	router.HandleFunc("/syn1900/engagement/personalization", api.UpdatePreferences).Methods("PUT")
+	// Transaction endpoints
+	router.HandleFunc("/syn1900/transactions", api.RecordTransaction).Methods("POST")
+	router.HandleFunc("/syn1900/transactions/{transactionID}", api.GetTransaction).Methods("GET")
+	router.HandleFunc("/syn1900/transactions/{transactionID}/update", api.UpdateTransaction).Methods("PUT")
+	router.HandleFunc("/syn1900/transactions", api.ListTransactions).Methods("GET")
+	router.HandleFunc("/syn1900/transactions/{transactionID}/validate", api.ValidateTransaction).Methods("GET")
+	router.HandleFunc("/syn1900/transactions/{transactionID}/revoke", api.RevokeTransaction).Methods("POST")
 
-	// Analytics and reporting (10 endpoints)
-	router.HandleFunc("/syn1900/analytics/customer", api.GetCustomerAnalytics).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/program", api.GetProgramPerformance).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/roi", api.GetROIAnalytics).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/engagement", api.GetEngagementMetrics).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/retention", api.GetRetentionAnalytics).Methods("GET")
-	router.HandleFunc("/syn1900/reports/member", api.GenerateMemberReport).Methods("GET")
-	router.HandleFunc("/syn1900/reports/financial", api.GenerateFinancialReport).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/trends", api.GetTrendAnalysis).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/segmentation", api.GetCustomerSegmentation).Methods("GET")
-	router.HandleFunc("/syn1900/analytics/lifetime-value", api.GetLifetimeValue).Methods("GET")
+	// Event management endpoints
+	router.HandleFunc("/syn1900/events/{tokenID}/log", api.LogEvent).Methods("POST")
+	router.HandleFunc("/syn1900/events/{tokenID}", api.FetchTokenEvents).Methods("GET")
+	router.HandleFunc("/syn1900/events/{tokenID}/report", api.GenerateEventReport).Methods("GET")
+	router.HandleFunc("/syn1900/events/{tokenID}/completion", api.AddEventForCompletion).Methods("POST")
+	router.HandleFunc("/syn1900/events/{tokenID}/transfer", api.AddEventForTransfer).Methods("POST")
+	router.HandleFunc("/syn1900/events/{tokenID}/revocation", api.AddEventForRevocation).Methods("POST")
 
-	// Administrative (5 endpoints)
-	router.HandleFunc("/syn1900/admin/settings", api.UpdateSettings).Methods("PUT")
-	router.HandleFunc("/syn1900/admin/compliance", api.ManageCompliance).Methods("POST")
-	router.HandleFunc("/syn1900/admin/health", api.GetSystemHealth).Methods("GET")
-	router.HandleFunc("/syn1900/admin/logs", api.GetSystemLogs).Methods("GET")
-	router.HandleFunc("/syn1900/admin/backup", api.CreateBackup).Methods("POST")
+	// Compliance endpoints
+	router.HandleFunc("/syn1900/compliance/{tokenID}/verify", api.VerifyTokenCompliance).Methods("GET")
+	router.HandleFunc("/syn1900/compliance/{tokenID}/revoke", api.RevokeNonCompliantToken).Methods("POST")
+	router.HandleFunc("/syn1900/compliance/audit", api.AuditTokenCompliance).Methods("GET")
+	router.HandleFunc("/syn1900/compliance/report", api.GenerateComplianceReport).Methods("GET")
+
+	// Utility endpoints
+	router.HandleFunc("/syn1900/health", api.HealthCheck).Methods("GET")
+	router.HandleFunc("/syn1900/metrics", api.GetMetrics).Methods("GET")
 }
 
-func (api *SYN1900API) CreateLoyaltyToken(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Creating loyalty program token - Request from %s", r.RemoteAddr)
-	
-	var request struct {
-		Name            string            `json:"name" validate:"required,min=3,max=50"`
-		Symbol          string            `json:"symbol" validate:"required,min=2,max=10"`
-		TotalSupply     float64           `json:"total_supply" validate:"required,min=1"`
-		PointValue      float64           `json:"point_value" validate:"required,min=0.001"`
-		ExpirationDays  int               `json:"expiration_days" validate:"min=0"`
-		RedemptionRate  float64           `json:"redemption_rate" validate:"min=0.1,max=1"`
-		TierLevels      []string          `json:"tier_levels"`
-		Attributes      map[string]interface{} `json:"attributes"`
-		ProgramType     string            `json:"program_type" validate:"required,oneof=points cashback tier coalition"`
-	}
+// Token Management Handlers
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"error":"Invalid JSON format","code":"INVALID_JSON"}`, http.StatusBadRequest)
+type CreateTokenRequest struct {
+	IssuerID        string     `json:"issuer_id"`
+	RecipientID     string     `json:"recipient_id"`
+	CourseID        string     `json:"course_id"`
+	CourseName      string     `json:"course_name"`
+	CreditValue     float64    `json:"credit_value"`
+	Metadata        string     `json:"metadata"`
+	Signature       []byte     `json:"signature"`
+	ExpirationDate  *time.Time `json:"expiration_date,omitempty"`
+}
+
+func (api *SYN1900API) CreateToken(w http.ResponseWriter, r *http.Request) {
+	var req CreateTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	// Comprehensive validation
-	if request.Name == "" || request.Symbol == "" || request.TotalSupply <= 0 {
-		http.Error(w, `{"error":"Missing required fields","code":"VALIDATION_ERROR"}`, http.StatusBadRequest)
+	// Call the real module function
+	token, err := api.factory.CreateSYN1900Token(
+		req.IssuerID,
+		req.RecipientID,
+		req.CourseID,
+		req.CourseName,
+		req.CreditValue,
+		req.Metadata,
+		req.Signature,
+		req.ExpirationDate,
+	)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create token: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	if request.PointValue <= 0 || request.RedemptionRate <= 0 {
-		http.Error(w, `{"error":"Invalid point value or redemption rate","code":"VALIDATION_ERROR"}`, http.StatusBadRequest)
+	// Store the token
+	err = api.storage.SaveToken(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to store token: %v", err), http.StatusInternalServerError)
 		return
-	}
-
-	tokenID := fmt.Sprintf("LOYALTY_%d", time.Now().UnixNano())
-	
-	response := map[string]interface{}{
-		"success":          true,
-		"token_id":         tokenID,
-		"name":             request.Name,
-		"symbol":           request.Symbol,
-		"total_supply":     request.TotalSupply,
-		"point_value":      request.PointValue,
-		"expiration_days":  request.ExpirationDays,
-		"redemption_rate":  request.RedemptionRate,
-		"tier_levels":      request.TierLevels,
-		"attributes":       request.Attributes,
-		"program_type":     request.ProgramType,
-		"created_at":       time.Now().Format(time.RFC3339),
-		"status":           "active",
-		"contract_address": fmt.Sprintf("0x%s", tokenID),
-		"network":          "synnergy",
-		"decimals":         18,
-		"initial_tier":     "bronze",
-		"referral_bonus":   10.0,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
-	
-	log.Printf("Loyalty program token created successfully: %s", tokenID)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
 }
 
-func (api *SYN1900API) CreateLoyaltyProgram(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Creating loyalty program - Request from %s", r.RemoteAddr)
-	
-	var request struct {
-		Name            string    `json:"name" validate:"required"`
-		Description     string    `json:"description" validate:"required"`
-		TokenID         string    `json:"token_id" validate:"required"`
-		EarnRules       map[string]interface{} `json:"earn_rules"`
-		RedeemRules     map[string]interface{} `json:"redeem_rules"`
-		TierRequirements map[string]int `json:"tier_requirements"`
-		MaxMembers      int       `json:"max_members" validate:"min=1"`
-		StartDate       string    `json:"start_date" validate:"required"`
-		EndDate         string    `json:"end_date"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"error":"Invalid JSON format","code":"INVALID_JSON"}`, http.StatusBadRequest)
-		return
-	}
-
-	programID := fmt.Sprintf("PROGRAM_%d", time.Now().UnixNano())
-	
-	response := map[string]interface{}{
-		"success":           true,
-		"program_id":        programID,
-		"name":              request.Name,
-		"description":       request.Description,
-		"token_id":          request.TokenID,
-		"earn_rules":        request.EarnRules,
-		"redeem_rules":      request.RedeemRules,
-		"tier_requirements": request.TierRequirements,
-		"max_members":       request.MaxMembers,
-		"start_date":        request.StartDate,
-		"end_date":          request.EndDate,
-		"created_at":        time.Now().Format(time.RFC3339),
-		"status":            "active",
-		"member_count":      0,
-		"total_rewards":     0,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
-	
-	log.Printf("Loyalty program created successfully: %s", programID)
-}
-
-func (api *SYN1900API) RedeemPoints(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Processing point redemption - Request from %s", r.RemoteAddr)
-	
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-	
-	var request struct {
-		UserAddress string  `json:"user_address" validate:"required"`
-		Amount      float64 `json:"amount" validate:"required,min=1"`
-		RewardID    string  `json:"reward_id" validate:"required"`
-		Notes       string  `json:"notes"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"error":"Invalid JSON format","code":"INVALID_JSON"}`, http.StatusBadRequest)
-		return
-	}
-
-	redemptionID := fmt.Sprintf("REDEEM_%d", time.Now().UnixNano())
-	
-	response := map[string]interface{}{
-		"success":        true,
-		"redemption_id":  redemptionID,
-		"token_id":       tokenID,
-		"user_address":   request.UserAddress,
-		"amount":         request.Amount,
-		"reward_id":      request.RewardID,
-		"notes":          request.Notes,
-		"status":         "processing",
-		"estimated_delivery": "3-5 business days",
-		"confirmation_code": fmt.Sprintf("CONF_%d", time.Now().Unix()),
-		"timestamp":      time.Now().Format(time.RFC3339),
-		"remaining_balance": 500.0, // Mock remaining balance
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
-	
-	log.Printf("Point redemption processed successfully: %s", redemptionID)
-}
-
-// Implementing key endpoints with enterprise patterns
 func (api *SYN1900API) GetToken(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	tokenID := vars["tokenID"]
-	
-	response := map[string]interface{}{
-		"success":      true,
-		"token_id":     tokenID,
-		"name":         "Premium Loyalty Token",
-		"symbol":       "PLT",
-		"status":       "active",
-		"point_value":  0.01,
-		"program_type": "points",
-		"tier_levels":  []string{"bronze", "silver", "gold", "platinum"},
-		"last_updated": time.Now().Format(time.RFC3339),
+
+	decryptionKey := r.URL.Query().Get("decryption_key")
+	if decryptionKey == "" {
+		http.Error(w, "Decryption key required", http.StatusBadRequest)
+		return
 	}
-	
+
+	// Call the real module function
+	token, err := api.storage.GetToken(tokenID, decryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
 }
 
 func (api *SYN1900API) ListTokens(w http.ResponseWriter, r *http.Request) {
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
-	if page == 0 { page = 1 }
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	if limit == 0 { limit = 20 }
-	
-	response := map[string]interface{}{
-		"success": true,
-		"tokens":  []interface{}{},
-		"pagination": map[string]interface{}{
-			"page":        page,
-			"limit":       limit,
-			"total":       0,
-			"total_pages": 0,
-		},
+	// Call the real module function
+	tokens, err := api.storage.ListAllTokens()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list tokens: %v", err), http.StatusInternalServerError)
+		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"tokens": tokens,
+	})
 }
 
-func (api *SYN1900API) GetCustomerAnalytics(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"analytics": map[string]interface{}{
-			"total_members":     15000,
-			"active_members":    12500,
-			"avg_points_earned": 2500.0,
-			"redemption_rate":   0.65,
-			"satisfaction_score": 4.2,
-		},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+type RevokeTokenRequest struct {
+	Reason string `json:"reason"`
 }
 
-func (api *SYN1900API) GetSystemHealth(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"health":  "excellent",
-		"uptime":  99.98,
-		"active_programs": 25,
-		"total_points_issued": 5000000.0,
+func (api *SYN1900API) RevokeToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RevokeTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
 	}
+
+	// Call the real module function
+	err := api.factory.RevokeSYN1900Token(tokenID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token revoked successfully",
+	})
+}
+
+type TransferTokenRequest struct {
+	NewRecipientID string `json:"new_recipient_id"`
+	TransferType   string `json:"transfer_type"`
+}
+
+func (api *SYN1900API) TransferToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.factory.TransferSYN1900Token(tokenID, req.NewRecipientID, req.TransferType)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to transfer token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token transferred successfully",
+	})
+}
+
+func (api *SYN1900API) UpdateToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First get the token
+	decryptionKey := r.URL.Query().Get("decryption_key")
+	if decryptionKey == "" {
+		http.Error(w, "Decryption key required", http.StatusBadRequest)
+		return
+	}
+
+	token, err := api.storage.GetToken(tokenID, decryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.storage.UpdateToken(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token updated successfully",
+	})
+}
+
+func (api *SYN1900API) DeleteToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	err := api.storage.DeleteToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token deleted successfully",
+	})
+}
+
+// Management Handlers
+
+type TransferCreditRequest struct {
+	FromID string `json:"from_id"`
+	ToID   string `json:"to_id"`
+}
+
+func (api *SYN1900API) TransferCredit(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req TransferCreditRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.TransferCredit(tokenID, req.FromID, req.ToID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to transfer credit: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Credit transferred successfully",
+	})
+}
+
+type RevokeCreditRequest struct {
+	RevocationReason string `json:"revocation_reason"`
+}
+
+func (api *SYN1900API) RevokeCredit(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RevokeCreditRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.RevokeCredit(tokenID, req.RevocationReason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke credit: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Credit revoked successfully",
+	})
+}
+
+func (api *SYN1900API) ValidateCredit(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	isValid, err := api.management.ValidateCredit(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to validate credit: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   "success",
+		"is_valid": isValid,
+	})
+}
+
+type UpdateMetadataRequest struct {
+	NewMetadata string `json:"new_metadata"`
+}
+
+func (api *SYN1900API) UpdateMetadata(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req UpdateMetadataRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.UpdateMetadata(tokenID, req.NewMetadata)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update metadata: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Metadata updated successfully",
+	})
+}
+
+type RenewCreditRequest struct {
+	NewExpirationDate time.Time `json:"new_expiration_date"`
+}
+
+func (api *SYN1900API) RenewCredit(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RenewCreditRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.RenewCredit(tokenID, req.NewExpirationDate)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to renew credit: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Credit renewed successfully",
+	})
+}
+
+func (api *SYN1900API) GenerateSummary(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	summary, err := api.management.GenerateSummary(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to generate summary: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"summary": summary,
+	})
+}
+
+// Security Handlers
+
+func (api *SYN1900API) VerifyDigitalSignature(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	isValid, err := api.security.VerifyDigitalSignature(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to verify signature: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":             "success",
+		"signature_valid":    isValid,
+	})
+}
+
+type EncryptMetadataRequest struct {
+	EncryptionKey string `json:"encryption_key"`
+}
+
+func (api *SYN1900API) EncryptTokenMetadata(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req EncryptMetadataRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.security.EncryptTokenMetadata(tokenID, req.EncryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to encrypt metadata: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Metadata encrypted successfully",
+	})
+}
+
+type DecryptMetadataRequest struct {
+	DecryptionKey string `json:"decryption_key"`
+}
+
+func (api *SYN1900API) DecryptTokenMetadata(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req DecryptMetadataRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	metadata, err := api.security.DecryptTokenMetadata(tokenID, req.DecryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to decrypt metadata: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   "success",
+		"metadata": metadata,
+	})
+}
+
+func (api *SYN1900API) HashToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	hash, err := api.security.HashToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to hash token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"hash":   hash,
+	})
+}
+
+type ValidateIntegrityRequest struct {
+	StoredHash string `json:"stored_hash"`
+}
+
+func (api *SYN1900API) ValidateTokenIntegrity(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req ValidateIntegrityRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	isValid, err := api.security.ValidateTokenIntegrity(tokenID, req.StoredHash)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to validate integrity: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":        "success",
+		"integrity_valid": isValid,
+	})
+}
+
+type RevokeTokenSecurityRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (api *SYN1900API) RevokeTokenSecurity(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RevokeTokenSecurityRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.security.RevokeToken(tokenID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke token security: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token security revoked successfully",
+	})
+}
+
+// Transaction Handlers
+
+func (api *SYN1900API) RecordTransaction(w http.ResponseWriter, r *http.Request) {
+	var transaction common.SYN1900Transaction
+	if err := json.NewDecoder(r.Body).Decode(&transaction); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	encryptionKey := r.URL.Query().Get("encryption_key")
+	if encryptionKey == "" {
+		http.Error(w, "Encryption key required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.transaction.RecordTransaction(transaction, encryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to record transaction: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transaction recorded successfully",
+	})
+}
+
+func (api *SYN1900API) GetTransaction(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	transactionID := vars["transactionID"]
+
+	decryptionKey := r.URL.Query().Get("decryption_key")
+	if decryptionKey == "" {
+		http.Error(w, "Decryption key required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	transaction, err := api.transaction.GetTransaction(transactionID, decryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get transaction: %v", err), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "success",
+		"transaction": transaction,
+	})
+}
+
+func (api *SYN1900API) UpdateTransaction(w http.ResponseWriter, r *http.Request) {
+	var transaction common.SYN1900Transaction
+	if err := json.NewDecoder(r.Body).Decode(&transaction); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	encryptionKey := r.URL.Query().Get("encryption_key")
+	if encryptionKey == "" {
+		http.Error(w, "Encryption key required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.transaction.UpdateTransaction(transaction, encryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update transaction: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transaction updated successfully",
+	})
+}
+
+func (api *SYN1900API) ListTransactions(w http.ResponseWriter, r *http.Request) {
+	// Call the real module function
+	transactions, err := api.transaction.ListAllTransactions()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list transactions: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":       "success",
+		"transactions": transactions,
+	})
+}
+
+func (api *SYN1900API) ValidateTransaction(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	transactionID := vars["transactionID"]
+
+	// First get the transaction
+	decryptionKey := r.URL.Query().Get("decryption_key")
+	if decryptionKey == "" {
+		http.Error(w, "Decryption key required", http.StatusBadRequest)
+		return
+	}
+
+	transaction, err := api.transaction.GetTransaction(transactionID, decryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get transaction: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.transaction.ValidateTransaction(transaction)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Transaction validation failed: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transaction is valid",
+	})
+}
+
+type RevokeTransactionRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (api *SYN1900API) RevokeTransaction(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	transactionID := vars["transactionID"]
+
+	var req RevokeTransactionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.transaction.RevokeTransaction(transactionID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke transaction: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transaction revoked successfully",
+	})
+}
+
+// Event Handlers
+
+type LogEventRequest struct {
+	EventType   string `json:"event_type"`
+	Description string `json:"description"`
+}
+
+func (api *SYN1900API) LogEvent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req LogEventRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.events.LogEvent(tokenID, req.EventType, req.Description)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to log event: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Event logged successfully",
+	})
+}
+
+func (api *SYN1900API) FetchTokenEvents(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	events, err := api.events.FetchTokenEvents(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to fetch events: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"events": events,
+	})
+}
+
+func (api *SYN1900API) GenerateEventReport(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	report, err := api.events.GenerateEventReport(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to generate event report: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"report": report,
+	})
+}
+
+type AddEventForCompletionRequest struct {
+	RecipientID string `json:"recipient_id"`
+}
+
+func (api *SYN1900API) AddEventForCompletion(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req AddEventForCompletionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.events.AddEventForCompletion(tokenID, req.RecipientID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to add completion event: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Completion event added successfully",
+	})
+}
+
+type AddEventForTransferRequest struct {
+	FromID string `json:"from_id"`
+	ToID   string `json:"to_id"`
+}
+
+func (api *SYN1900API) AddEventForTransfer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req AddEventForTransferRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.events.AddEventForTransfer(tokenID, req.FromID, req.ToID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to add transfer event: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transfer event added successfully",
+	})
+}
+
+type AddEventForRevocationRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (api *SYN1900API) AddEventForRevocation(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req AddEventForRevocationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.events.AddEventForRevocation(tokenID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to add revocation event: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Revocation event added successfully",
+	})
+}
+
+// Compliance Handlers
+
+func (api *SYN1900API) VerifyTokenCompliance(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	err := api.compliance.VerifyTokenCompliance(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Compliance verification failed: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token is compliant",
+	})
+}
+
+type RevokeNonCompliantRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (api *SYN1900API) RevokeNonCompliantToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RevokeNonCompliantRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.compliance.RevokeNonCompliantToken(tokenID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke non-compliant token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Non-compliant token revoked successfully",
+	})
+}
+
+func (api *SYN1900API) AuditTokenCompliance(w http.ResponseWriter, r *http.Request) {
+	issuerID := r.URL.Query().Get("issuer_id")
+	recipientID := r.URL.Query().Get("recipient_id")
+
+	if issuerID == "" || recipientID == "" {
+		http.Error(w, "Issuer ID and Recipient ID are required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	auditLogs, err := api.compliance.AuditTokenCompliance(issuerID, recipientID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to audit compliance: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":     "success",
+		"audit_logs": auditLogs,
+	})
+}
+
+func (api *SYN1900API) GenerateComplianceReport(w http.ResponseWriter, r *http.Request) {
+	issuerID := r.URL.Query().Get("issuer_id")
+	recipientID := r.URL.Query().Get("recipient_id")
+
+	if issuerID == "" || recipientID == "" {
+		http.Error(w, "Issuer ID and Recipient ID are required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	report, err := api.compliance.GenerateComplianceReport(issuerID, recipientID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to generate compliance report: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"report": report,
+	})
+}
+
+// Utility Handlers
+
+func (api *SYN1900API) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "healthy",
+		"service":   "syn1900-api",
+		"timestamp": time.Now(),
+	})
+}
+
+func (api *SYN1900API) GetMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"metrics": "Metrics collection would be implemented here",
+	})
 }

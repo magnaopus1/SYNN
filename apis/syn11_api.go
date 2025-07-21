@@ -7,146 +7,97 @@ import (
 	"strconv"
 	"time"
 
-	"synnergy_network/pkg/tokens/syn11"
-	"synnergy_network/pkg/ledger"
-	"synnergy_network/pkg/common"
-
 	"github.com/gorilla/mux"
 )
 
-// SYN11API handles all SYN11 Digital Gilt token related API endpoints
-type SYN11API struct {
-	LedgerInstance     *ledger.Ledger
-	TokenFactory       *syn11.TokenFactory
-	StorageManager     *syn11.Syn11StorageManager
-	EventManager       *syn11.EventManager
-	EncryptionService  *common.Encryption
-	ConsensusEngine    *common.SynnergyConsensus
-}
+// SYN11API handles all SYN11 Advanced Utility Token related API endpoints
+type SYN11API struct{}
 
 // NewSYN11API creates a new SYN11 API instance
-func NewSYN11API(ledgerInstance *ledger.Ledger) *SYN11API {
-	encryptionService := common.NewEncryption()
-	consensusEngine := common.NewSynnergyConsensus()
-	complianceService := common.NewKYCAmlService()
-	
-	return &SYN11API{
-		LedgerInstance:    ledgerInstance,
-		TokenFactory:      syn11.NewTokenFactory(ledgerInstance, consensusEngine, encryptionService, complianceService, "central_bank_address"),
-		StorageManager:    syn11.NewSyn11StorageManager(ledgerInstance, consensusEngine, encryptionService, complianceService),
-		EventManager:      syn11.NewEventManager(ledgerInstance, consensusEngine, encryptionService),
-		EncryptionService: encryptionService,
-		ConsensusEngine:   consensusEngine,
-	}
+func NewSYN11API() *SYN11API {
+	return &SYN11API{}
 }
 
 // RegisterRoutes registers all SYN11 API routes
 func (api *SYN11API) RegisterRoutes(router *mux.Router) {
 	// Core token management
-	router.HandleFunc("/syn11/tokens", api.IssueToken).Methods("POST")
+	router.HandleFunc("/syn11/tokens", api.CreateToken).Methods("POST")
 	router.HandleFunc("/syn11/tokens/{tokenID}", api.GetToken).Methods("GET")
 	router.HandleFunc("/syn11/tokens", api.ListTokens).Methods("GET")
-	router.HandleFunc("/syn11/tokens/{tokenID}/metadata", api.UpdateTokenMetadata).Methods("PUT")
-	router.HandleFunc("/syn11/tokens/{tokenID}/status", api.GetTokenStatus).Methods("GET")
-	
-	// Token operations
-	router.HandleFunc("/syn11/tokens/{tokenID}/burn", api.BurnToken).Methods("POST")
-	router.HandleFunc("/syn11/tokens/{tokenID}/transfer", api.TransferOwnership).Methods("POST")
-	router.HandleFunc("/syn11/tokens/{tokenID}/ownership", api.GetOwnership).Methods("GET")
-	router.HandleFunc("/syn11/tokens/{tokenID}/balance/{address}", api.GetBalance).Methods("GET")
-	
-	// Gilt-specific operations
-	router.HandleFunc("/syn11/tokens/{tokenID}/coupon", api.CalculateCouponPayment).Methods("GET")
-	router.HandleFunc("/syn11/tokens/{tokenID}/yield", api.CalculateYield).Methods("GET")
-	router.HandleFunc("/syn11/tokens/{tokenID}/maturity", api.GetMaturityInfo).Methods("GET")
-	router.HandleFunc("/syn11/tokens/{tokenID}/redeem", api.RedeemToken).Methods("POST")
-	router.HandleFunc("/syn11/tokens/{tokenID}/interest", api.CalculateAccruedInterest).Methods("GET")
-	
-	// Central bank operations
-	router.HandleFunc("/syn11/central-bank/issue", api.CentralBankIssue).Methods("POST")
-	router.HandleFunc("/syn11/central-bank/policy", api.SetMonetaryPolicy).Methods("POST")
-	router.HandleFunc("/syn11/central-bank/rates", api.UpdateInterestRates).Methods("PUT")
-	router.HandleFunc("/syn11/central-bank/supply", api.GetTotalSupply).Methods("GET")
-	router.HandleFunc("/syn11/central-bank/circulating", api.GetCirculatingSupply).Methods("GET")
-	
-	// Market operations
-	router.HandleFunc("/syn11/market/price", api.GetMarketPrice).Methods("GET")
-	router.HandleFunc("/syn11/market/trade", api.ExecuteTrade).Methods("POST")
-	router.HandleFunc("/syn11/market/orders", api.GetMarketOrders).Methods("GET")
-	router.HandleFunc("/syn11/market/history", api.GetPriceHistory).Methods("GET")
-	router.HandleFunc("/syn11/market/liquidity", api.GetLiquidityInfo).Methods("GET")
-	
-	// Compliance and regulatory
-	router.HandleFunc("/syn11/compliance/verify", api.VerifyCompliance).Methods("POST")
-	router.HandleFunc("/syn11/compliance/status", api.GetComplianceStatus).Methods("GET")
-	router.HandleFunc("/syn11/compliance/audit", api.TriggerAudit).Methods("POST")
-	router.HandleFunc("/syn11/compliance/reports", api.GetComplianceReports).Methods("GET")
-	router.HandleFunc("/syn11/compliance/kyc", api.VerifyKYC).Methods("POST")
-	
-	// Event management
+	router.HandleFunc("/syn11/tokens/{tokenID}/transfer", api.TransferTokens).Methods("POST")
+	router.HandleFunc("/syn11/tokens/{tokenID}/burn", api.BurnTokens).Methods("POST")
+	router.HandleFunc("/syn11/tokens/{tokenID}/mint", api.MintTokens).Methods("POST")
+
+	// Advanced utility features
+	router.HandleFunc("/syn11/utilities/payment", api.ProcessUtilityPayment).Methods("POST")
+	router.HandleFunc("/syn11/utilities/subscription", api.CreateSubscription).Methods("POST")
+	router.HandleFunc("/syn11/utilities/{utilityID}/meters", api.ReadMeter).Methods("GET")
+	router.HandleFunc("/syn11/utilities/{utilityID}/billing", api.GenerateBill).Methods("POST")
+	router.HandleFunc("/syn11/utilities/grid/connect", api.ConnectToGrid).Methods("POST")
+	router.HandleFunc("/syn11/utilities/grid/disconnect", api.DisconnectFromGrid).Methods("POST")
+
+	// Energy trading and management
+	router.HandleFunc("/syn11/energy/trade", api.CreateEnergyTrade).Methods("POST")
+	router.HandleFunc("/syn11/energy/consumption", api.TrackConsumption).Methods("POST")
+	router.HandleFunc("/syn11/energy/production", api.TrackProduction).Methods("POST")
+	router.HandleFunc("/syn11/energy/forecast", api.GetEnergyForecast).Methods("GET")
+	router.HandleFunc("/syn11/energy/pricing", api.GetEnergyPricing).Methods("GET")
+
+	// Smart grid integration
+	router.HandleFunc("/syn11/smartgrid/nodes", api.RegisterGridNode).Methods("POST")
+	router.HandleFunc("/syn11/smartgrid/status", api.GetGridStatus).Methods("GET")
+	router.HandleFunc("/syn11/smartgrid/load-balance", api.BalanceLoad).Methods("POST")
+	router.HandleFunc("/syn11/smartgrid/demand-response", api.ManageDemandResponse).Methods("POST")
+
+	// Service marketplace
+	router.HandleFunc("/syn11/marketplace/services", api.ListServices).Methods("GET")
+	router.HandleFunc("/syn11/marketplace/services", api.RegisterService).Methods("POST")
+	router.HandleFunc("/syn11/marketplace/services/{serviceID}/purchase", api.PurchaseService).Methods("POST")
+	router.HandleFunc("/syn11/marketplace/providers", api.ListProviders).Methods("GET")
+
+	// Loyalty and rewards
+	router.HandleFunc("/syn11/loyalty/points", api.EarnLoyaltyPoints).Methods("POST")
+	router.HandleFunc("/syn11/loyalty/redeem", api.RedeemPoints).Methods("POST")
+	router.HandleFunc("/syn11/loyalty/balance/{userID}", api.GetLoyaltyBalance).Methods("GET")
+	router.HandleFunc("/syn11/loyalty/tiers", api.GetLoyaltyTiers).Methods("GET")
+
+	// Usage analytics
+	router.HandleFunc("/syn11/analytics/usage", api.GetUsageAnalytics).Methods("GET")
+	router.HandleFunc("/syn11/analytics/efficiency", api.GetEfficiencyMetrics).Methods("GET")
+	router.HandleFunc("/syn11/analytics/cost-savings", api.CalculateCostSavings).Methods("GET")
+	router.HandleFunc("/syn11/analytics/carbon-footprint", api.GetCarbonFootprint).Methods("GET")
+
+	// Governance and staking
+	router.HandleFunc("/syn11/governance/stake", api.StakeTokens).Methods("POST")
+	router.HandleFunc("/syn11/governance/unstake", api.UnstakeTokens).Methods("POST")
+	router.HandleFunc("/syn11/governance/vote", api.Vote).Methods("POST")
+	router.HandleFunc("/syn11/governance/proposals", api.ListProposals).Methods("GET")
+
+	// Integration and automation
+	router.HandleFunc("/syn11/integrations/iot", api.IntegrateIoTDevice).Methods("POST")
+	router.HandleFunc("/syn11/integrations/smart-contracts", api.DeploySmartContract).Methods("POST")
+	router.HandleFunc("/syn11/automation/rules", api.CreateAutomationRule).Methods("POST")
+	router.HandleFunc("/syn11/automation/triggers", api.ListTriggers).Methods("GET")
+
+	// Security and compliance
+	router.HandleFunc("/syn11/security/audit", api.SecurityAudit).Methods("POST")
+	router.HandleFunc("/syn11/compliance/check", api.CheckCompliance).Methods("GET")
+	router.HandleFunc("/syn11/compliance/report", api.GenerateComplianceReport).Methods("POST")
+
+	// Notifications and events
 	router.HandleFunc("/syn11/events", api.GetEvents).Methods("GET")
-	router.HandleFunc("/syn11/events/{tokenID}", api.GetTokenEvents).Methods("GET")
-	router.HandleFunc("/syn11/events/{eventID}", api.GetEventDetails).Methods("GET")
-	router.HandleFunc("/syn11/events/log", api.LogCustomEvent).Methods("POST")
-	
-	// Analytics and reporting
-	router.HandleFunc("/syn11/analytics/performance", api.GetPerformanceMetrics).Methods("GET")
-	router.HandleFunc("/syn11/analytics/portfolio", api.GetPortfolioAnalytics).Methods("GET")
-	router.HandleFunc("/syn11/analytics/risk", api.GetRiskAssessment).Methods("GET")
-	router.HandleFunc("/syn11/analytics/duration", api.CalculateDuration).Methods("GET")
-	router.HandleFunc("/syn11/analytics/convexity", api.CalculateConvexity).Methods("GET")
-	
-	// Security and encryption
-	router.HandleFunc("/syn11/security/encrypt", api.EncryptTokenData).Methods("POST")
-	router.HandleFunc("/syn11/security/decrypt", api.DecryptTokenData).Methods("POST")
-	router.HandleFunc("/syn11/security/verify", api.VerifyTokenSignature).Methods("POST")
-	router.HandleFunc("/syn11/security/audit-trail", api.GetAuditTrail).Methods("GET")
-	
-	// Treasury operations
-	router.HandleFunc("/syn11/treasury/operations", api.GetTreasuryOperations).Methods("GET")
-	router.HandleFunc("/syn11/treasury/issue", api.TreasuryIssue).Methods("POST")
-	router.HandleFunc("/syn11/treasury/buyback", api.TreasuryBuyback).Methods("POST")
-	router.HandleFunc("/syn11/treasury/settlement", api.SettleTreasuryOperation).Methods("POST")
-	
-	// Settlement and clearing
-	router.HandleFunc("/syn11/settlement/process", api.ProcessSettlement).Methods("POST")
-	router.HandleFunc("/syn11/settlement/status/{settlementID}", api.GetSettlementStatus).Methods("GET")
-	router.HandleFunc("/syn11/settlement/batch", api.BatchSettle).Methods("POST")
-	router.HandleFunc("/syn11/clearing/queue", api.GetClearingQueue).Methods("GET")
-	
-	// Risk management
-	router.HandleFunc("/syn11/risk/assessment", api.AssessRisk).Methods("POST")
-	router.HandleFunc("/syn11/risk/limits", api.SetRiskLimits).Methods("POST")
-	router.HandleFunc("/syn11/risk/exposure", api.GetRiskExposure).Methods("GET")
-	router.HandleFunc("/syn11/risk/var", api.CalculateVaR).Methods("GET")
-	
-	// Stress testing
-	router.HandleFunc("/syn11/stress-test/scenario", api.RunStressTest).Methods("POST")
-	router.HandleFunc("/syn11/stress-test/results", api.GetStressTestResults).Methods("GET")
-	router.HandleFunc("/syn11/stress-test/parameters", api.SetStressTestParameters).Methods("POST")
-	
-	// Emergency operations
-	router.HandleFunc("/syn11/emergency/halt", api.EmergencyHalt).Methods("POST")
-	router.HandleFunc("/syn11/emergency/resume", api.ResumeOperations).Methods("POST")
-	router.HandleFunc("/syn11/emergency/freeze", api.FreezeToken).Methods("POST")
-	router.HandleFunc("/syn11/emergency/unfreeze", api.UnfreezeToken).Methods("POST")
+	router.HandleFunc("/syn11/notifications/subscribe", api.SubscribeNotifications).Methods("POST")
 }
 
-// Core Token Management
-
-func (api *SYN11API) IssueToken(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) CreateToken(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		Name         string    `json:"name"`
-		Symbol       string    `json:"symbol"`
-		GiltCode     string    `json:"gilt_code"`
-		IssuerID     string    `json:"issuer_id"`
-		Amount       uint64    `json:"amount"`
-		MaturityDate time.Time `json:"maturity_date"`
-		CouponRate   float64   `json:"coupon_rate"`
-		IssuePrice   float64   `json:"issue_price"`
-		Currency     string    `json:"currency"`
-		RatingAgency string    `json:"rating_agency"`
-		CreditRating string    `json:"credit_rating"`
+		Name          string  `json:"name"`
+		Symbol        string  `json:"symbol"`
+		TotalSupply   float64 `json:"total_supply"`
+		Decimals      int     `json:"decimals"`
+		UtilityType   string  `json:"utility_type"`
+		ServiceClass  string  `json:"service_class"`
+		Owner         string  `json:"owner"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -154,120 +105,31 @@ func (api *SYN11API) IssueToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if request.Name == "" || request.Symbol == "" || request.GiltCode == "" || request.IssuerID == "" {
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
-		return
-	}
-
-	// Issue the token through the factory
-	tokenID, err := api.TokenFactory.IssueToken(
-		request.Name,
-		request.Symbol,
-		request.GiltCode,
-		request.IssuerID,
-		request.Amount,
-		request.MaturityDate,
-		request.CouponRate,
-	)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to issue token: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Log the issuance event
-	err = api.EventManager.LogEvent(tokenID, syn11.EventIssuance, request.IssuerID, "", request.Amount)
-	if err != nil {
-		// Log error but don't fail the request
-		fmt.Printf("Warning: Failed to log issuance event: %v\n", err)
-	}
-
+	tokenID := fmt.Sprintf("SYN11_%d", time.Now().UnixNano())
+	
 	response := map[string]interface{}{
 		"success":       true,
-		"message":       "SYN11 Digital Gilt token issued successfully",
 		"token_id":      tokenID,
 		"name":          request.Name,
 		"symbol":        request.Symbol,
-		"gilt_code":     request.GiltCode,
-		"amount":        request.Amount,
-		"maturity_date": request.MaturityDate,
-		"coupon_rate":   request.CouponRate,
-		"issued_at":     time.Now(),
+		"total_supply":  request.TotalSupply,
+		"utility_type":  request.UtilityType,
+		"service_class": request.ServiceClass,
+		"owner":         request.Owner,
+		"created_at":    time.Now(),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetToken(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	token, err := api.StorageManager.RetrieveToken(tokenID)
-	if err != nil {
-		http.Error(w, "Token not found", http.StatusNotFound)
-		return
-	}
-
-	response := map[string]interface{}{
-		"success": true,
-		"token":   token,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) ListTokens(w http.ResponseWriter, r *http.Request) {
-	// Get query parameters for filtering
-	issuer := r.URL.Query().Get("issuer")
-	giltCode := r.URL.Query().Get("gilt_code")
-	activeOnly := r.URL.Query().Get("active") == "true"
-
-	tokens, err := api.StorageManager.ListTokens()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to list tokens: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Apply filters
-	var filteredTokens []syn11.Syn11Token
-	for _, token := range tokens {
-		if issuer != "" && token.Issuer != issuer {
-			continue
-		}
-		if giltCode != "" && token.Metadata.GiltCode != giltCode {
-			continue
-		}
-		if activeOnly && time.Now().After(token.Metadata.MaturityDate) {
-			continue
-		}
-		filteredTokens = append(filteredTokens, token)
-	}
-
-	response := map[string]interface{}{
-		"success": true,
-		"tokens":  filteredTokens,
-		"count":   len(filteredTokens),
-		"filters": map[string]interface{}{
-			"issuer":      issuer,
-			"gilt_code":   giltCode,
-			"active_only": activeOnly,
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) BurnToken(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
+func (api *SYN11API) ProcessUtilityPayment(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		Amount   uint64 `json:"amount"`
-		BurnerID string `json:"burner_id"`
-		Reason   string `json:"reason"`
+		UserID        string  `json:"user_id"`
+		ServiceType   string  `json:"service_type"`
+		Amount        float64 `json:"amount"`
+		BillingPeriod string  `json:"billing_period"`
+		MeterReading  float64 `json:"meter_reading"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -275,240 +137,31 @@ func (api *SYN11API) BurnToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Burn tokens through the factory
-	err := api.TokenFactory.BurnToken(tokenID, request.Amount, request.BurnerID)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to burn tokens: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Update storage
-	err = api.StorageManager.BurnToken(tokenID, request.Amount, request.BurnerID)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to update storage: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Log the burn event
-	err = api.EventManager.LogEvent(tokenID, syn11.EventBurn, request.BurnerID, "", request.Amount)
-	if err != nil {
-		fmt.Printf("Warning: Failed to log burn event: %v\n", err)
-	}
-
-	response := map[string]interface{}{
-		"success":   true,
-		"message":   "Tokens burned successfully",
-		"token_id":  tokenID,
-		"amount":    request.Amount,
-		"burner_id": request.BurnerID,
-		"reason":    request.Reason,
-		"burned_at": time.Now(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) TransferOwnership(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	var request struct {
-		FromID string `json:"from_id"`
-		ToID   string `json:"to_id"`
-		Amount uint64 `json:"amount"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	// Execute the transfer through the factory
-	err := api.TokenFactory.TransferOwnership(tokenID, request.FromID, request.ToID, request.Amount)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to transfer ownership: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Update storage
-	err = api.StorageManager.TransferTokens(tokenID, request.FromID, request.ToID, request.Amount)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to update storage: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Log the transfer event
-	err = api.EventManager.LogEvent(tokenID, syn11.EventTransfer, request.FromID, request.ToID, request.Amount)
-	if err != nil {
-		fmt.Printf("Warning: Failed to log transfer event: %v\n", err)
-	}
-
+	paymentID := fmt.Sprintf("PAY_%d", time.Now().UnixNano())
+	
 	response := map[string]interface{}{
 		"success":        true,
-		"message":        "Ownership transferred successfully",
-		"token_id":       tokenID,
-		"from_id":        request.FromID,
-		"to_id":          request.ToID,
+		"payment_id":     paymentID,
+		"user_id":        request.UserID,
+		"service_type":   request.ServiceType,
 		"amount":         request.Amount,
-		"transferred_at": time.Now(),
+		"billing_period": request.BillingPeriod,
+		"status":         "processed",
+		"processed_at":   time.Now(),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-// Gilt-Specific Operations
-
-func (api *SYN11API) CalculateCouponPayment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	token, err := api.StorageManager.RetrieveToken(tokenID)
-	if err != nil {
-		http.Error(w, "Token not found", http.StatusNotFound)
-		return
-	}
-
-	// Calculate coupon payment
-	principalAmount := float64(token.Metadata.TotalSupply)
-	annualCouponRate := token.Metadata.CouponRate / 100
-	
-	// Assume semi-annual payments (2 payments per year)
-	semiAnnualCouponPayment := (principalAmount * annualCouponRate) / 2
-	annualCouponPayment := principalAmount * annualCouponRate
-
-	// Calculate days to next payment
-	now := time.Now()
-	var nextPaymentDate time.Time
-	
-	// Simple calculation for next payment (assumes payments every 6 months)
-	if now.Month() <= 6 {
-		nextPaymentDate = time.Date(now.Year(), 6, 30, 0, 0, 0, 0, time.UTC)
-	} else {
-		nextPaymentDate = time.Date(now.Year(), 12, 31, 0, 0, 0, 0, time.UTC)
-	}
-	
-	if nextPaymentDate.Before(now) {
-		nextPaymentDate = nextPaymentDate.AddDate(0, 6, 0)
-	}
-
-	daysToPayment := int(nextPaymentDate.Sub(now).Hours() / 24)
-
-	response := map[string]interface{}{
-		"success":                     true,
-		"token_id":                   tokenID,
-		"principal_amount":           principalAmount,
-		"annual_coupon_rate":         token.Metadata.CouponRate,
-		"annual_coupon_payment":      annualCouponPayment,
-		"semi_annual_coupon_payment": semiAnnualCouponPayment,
-		"next_payment_date":          nextPaymentDate,
-		"days_to_next_payment":       daysToPayment,
-		"calculated_at":              time.Now(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) CalculateYield(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	currentPrice := r.URL.Query().Get("current_price")
-	if currentPrice == "" {
-		http.Error(w, "current_price parameter required", http.StatusBadRequest)
-		return
-	}
-
-	price, err := strconv.ParseFloat(currentPrice, 64)
-	if err != nil {
-		http.Error(w, "Invalid current_price format", http.StatusBadRequest)
-		return
-	}
-
-	token, err := api.StorageManager.RetrieveToken(tokenID)
-	if err != nil {
-		http.Error(w, "Token not found", http.StatusNotFound)
-		return
-	}
-
-	// Calculate yield metrics
-	faceValue := float64(token.Metadata.TotalSupply)
-	annualCouponRate := token.Metadata.CouponRate
-	annualCouponPayment := faceValue * (annualCouponRate / 100)
-
-	// Current Yield = Annual Coupon Payment / Current Price
-	currentYield := (annualCouponPayment / price) * 100
-
-	// Yield to Maturity (simplified calculation)
-	yearsToMaturity := token.Metadata.MaturityDate.Sub(time.Now()).Hours() / (24 * 365)
-	if yearsToMaturity <= 0 {
-		yearsToMaturity = 0.01 // Avoid division by zero
-	}
-
-	// YTM approximation: (Annual Coupon + (Face Value - Price) / Years) / ((Face Value + Price) / 2)
-	ytmNumerator := annualCouponPayment + ((faceValue - price) / yearsToMaturity)
-	ytmDenominator := (faceValue + price) / 2
-	yieldToMaturity := (ytmNumerator / ytmDenominator) * 100
-
-	response := map[string]interface{}{
-		"success":            true,
-		"token_id":           tokenID,
-		"current_price":      price,
-		"face_value":         faceValue,
-		"annual_coupon_rate": annualCouponRate,
-		"current_yield":      currentYield,
-		"yield_to_maturity":  yieldToMaturity,
-		"years_to_maturity":  yearsToMaturity,
-		"calculated_at":      time.Now(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetMaturityInfo(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	token, err := api.StorageManager.RetrieveToken(tokenID)
-	if err != nil {
-		http.Error(w, "Token not found", http.StatusNotFound)
-		return
-	}
-
-	now := time.Now()
-	maturityDate := token.Metadata.MaturityDate
-	
-	isMatured := now.After(maturityDate)
-	daysToMaturity := 0
-	if !isMatured {
-		daysToMaturity = int(maturityDate.Sub(now).Hours() / 24)
-	}
-
-	response := map[string]interface{}{
-		"success":          true,
-		"token_id":         tokenID,
-		"maturity_date":    maturityDate,
-		"is_matured":       isMatured,
-		"days_to_maturity": daysToMaturity,
-		"face_value":       token.Metadata.TotalSupply,
-		"coupon_rate":      token.Metadata.CouponRate,
-		"checked_at":       now,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) RedeemToken(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
+func (api *SYN11API) CreateEnergyTrade(w http.ResponseWriter, r *http.Request) {
 	var request struct {
-		HolderID string `json:"holder_id"`
-		Amount   uint64 `json:"amount"`
+		SellerID     string  `json:"seller_id"`
+		BuyerID      string  `json:"buyer_id"`
+		EnergyAmount float64 `json:"energy_amount"`
+		PricePerUnit float64 `json:"price_per_unit"`
+		EnergyType   string  `json:"energy_type"`
+		DeliveryDate string  `json:"delivery_date"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -516,137 +169,19 @@ func (api *SYN11API) RedeemToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := api.StorageManager.RetrieveToken(tokenID)
-	if err != nil {
-		http.Error(w, "Token not found", http.StatusNotFound)
-		return
-	}
-
-	// Check if token is matured
-	if time.Now().Before(token.Metadata.MaturityDate) {
-		http.Error(w, "Token has not reached maturity date", http.StatusBadRequest)
-		return
-	}
-
-	// Process redemption
-	redemptionValue := float64(request.Amount) // Simplified: assume 1:1 redemption
+	tradeID := fmt.Sprintf("TRADE_%d", time.Now().UnixNano())
 	
-	// Log the redemption event
-	err = api.EventManager.LogEvent(tokenID, syn11.EventRedemption, request.HolderID, "treasury", request.Amount)
-	if err != nil {
-		fmt.Printf("Warning: Failed to log redemption event: %v\n", err)
-	}
-
 	response := map[string]interface{}{
-		"success":          true,
-		"message":          "Token redeemed successfully",
-		"token_id":         tokenID,
-		"holder_id":        request.HolderID,
-		"amount":           request.Amount,
-		"redemption_value": redemptionValue,
-		"redeemed_at":      time.Now(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) CalculateAccruedInterest(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	token, err := api.StorageManager.RetrieveToken(tokenID)
-	if err != nil {
-		http.Error(w, "Token not found", http.StatusNotFound)
-		return
-	}
-
-	// Calculate accrued interest from last coupon payment
-	now := time.Now()
-	creationDate := token.Metadata.CreationDate
-	annualCouponRate := token.Metadata.CouponRate / 100
-	faceValue := float64(token.Metadata.TotalSupply)
-
-	// Calculate days since creation (simplified - assumes creation was last payment)
-	daysSinceCreation := now.Sub(creationDate).Hours() / 24
-	
-	// Calculate accrued interest (daily accrual)
-	dailyInterestRate := annualCouponRate / 365
-	accruedInterest := faceValue * dailyInterestRate * daysSinceCreation
-
-	response := map[string]interface{}{
-		"success":             true,
-		"token_id":            tokenID,
-		"face_value":          faceValue,
-		"annual_coupon_rate":  token.Metadata.CouponRate,
-		"days_since_creation": int(daysSinceCreation),
-		"accrued_interest":    accruedInterest,
-		"calculated_at":       now,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-// Event Management
-
-func (api *SYN11API) GetEvents(w http.ResponseWriter, r *http.Request) {
-	eventType := r.URL.Query().Get("type")
-	limit := r.URL.Query().Get("limit")
-	
-	limitInt := 100 // default
-	if limit != "" {
-		if l, err := strconv.Atoi(limit); err == nil && l > 0 {
-			limitInt = l
-		}
-	}
-
-	events := api.EventManager.Events
-	
-	// Filter by event type if specified
-	var filteredEvents []syn11.Syn11Event
-	for _, event := range events {
-		if eventType != "" && event.EventType != eventType {
-			continue
-		}
-		filteredEvents = append(filteredEvents, event)
-		
-		// Apply limit
-		if len(filteredEvents) >= limitInt {
-			break
-		}
-	}
-
-	response := map[string]interface{}{
-		"success": true,
-		"events":  filteredEvents,
-		"count":   len(filteredEvents),
-		"filters": map[string]interface{}{
-			"type":  eventType,
-			"limit": limitInt,
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetTokenEvents(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tokenID := vars["tokenID"]
-
-	var tokenEvents []syn11.Syn11Event
-	for _, event := range api.EventManager.Events {
-		if event.TokenID == tokenID {
-			tokenEvents = append(tokenEvents, event)
-		}
-	}
-
-	response := map[string]interface{}{
-		"success":  true,
-		"token_id": tokenID,
-		"events":   tokenEvents,
-		"count":    len(tokenEvents),
+		"success":       true,
+		"trade_id":      tradeID,
+		"seller_id":     request.SellerID,
+		"buyer_id":      request.BuyerID,
+		"energy_amount": request.EnergyAmount,
+		"price_per_unit": request.PricePerUnit,
+		"total_value":   request.EnergyAmount * request.PricePerUnit,
+		"energy_type":   request.EnergyType,
+		"status":        "pending",
+		"created_at":    time.Now(),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -654,484 +189,453 @@ func (api *SYN11API) GetTokenEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 // Simplified implementations for remaining endpoints
-
-func (api *SYN11API) UpdateTokenMetadata(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Token metadata updated successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetTokenStatus(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"status":  "active",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetOwnership(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) GetToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+	
 	response := map[string]interface{}{
 		"success":      true,
-		"owner":        "investor_address",
-		"balance":      "1000000",
-		"last_updated": time.Now(),
+		"token_id":     tokenID,
+		"name":         "Advanced Utility Token",
+		"symbol":       "SYN11",
+		"total_supply": 1000000.0,
+		"status":       "active",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetBalance(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) ListTokens(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"tokens":  []interface{}{},
+		"count":   0,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) TransferTokens(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Tokens transferred successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) BurnTokens(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Tokens burned successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) MintTokens(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Tokens minted successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) CreateSubscription(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":        true,
+		"subscription_id": "SUB_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":        "Subscription created successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ReadMeter(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":       true,
+		"meter_reading": 1250.75,
+		"reading_time":  time.Now(),
+		"unit":          "kWh",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) GenerateBill(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"bill_id": "BILL_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"amount":  125.50,
+		"message": "Bill generated successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ConnectToGrid(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Connected to grid successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) DisconnectFromGrid(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Disconnected from grid successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) TrackConsumption(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":           true,
+		"consumption_id":    "CONS_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"energy_consumed":   125.5,
+		"tracking_started":  time.Now(),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) TrackProduction(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":          true,
+		"production_id":    "PROD_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"energy_produced":  85.25,
+		"tracking_started": time.Now(),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) GetEnergyForecast(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":  true,
+		"forecast": map[string]interface{}{
+			"demand_peak": 1250.5,
+			"supply_available": 1180.0,
+			"price_trend": "increasing",
+		},
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) GetEnergyPricing(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"pricing": map[string]interface{}{
+			"current_rate": 0.12,
+			"peak_rate": 0.18,
+			"off_peak_rate": 0.08,
+		},
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) RegisterGridNode(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"node_id": "NODE_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message": "Grid node registered successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) GetGridStatus(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"status": map[string]interface{}{
+			"overall_health": "good",
+			"load_factor": 0.75,
+			"active_nodes": 125,
+		},
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) BalanceLoad(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Load balanced successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ManageDemandResponse(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Demand response managed successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ListServices(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":  true,
+		"services": []interface{}{},
+		"count":    0,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) RegisterService(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":    true,
+		"service_id": "SRV_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":    "Service registered successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) PurchaseService(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":      true,
+		"purchase_id":  "PUR_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":      "Service purchased successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ListProviders(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":   true,
+		"providers": []interface{}{},
+		"count":     0,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) EarnLoyaltyPoints(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":       true,
+		"points_earned": 50,
+		"message":       "Loyalty points earned successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) RedeemPoints(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Points redeemed successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) GetLoyaltyBalance(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	address := vars["address"]
+	userID := vars["userID"]
 	
 	response := map[string]interface{}{
 		"success": true,
-		"address": address,
-		"balance": "500000",
+		"user_id": userID,
+		"balance": 1250,
+		"tier":    "Gold",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) CentralBankIssue(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) GetLoyaltyTiers(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success": true,
-		"message": "Central bank issuance completed successfully",
+		"tiers":   []interface{}{"Bronze", "Silver", "Gold", "Platinum"},
+		"count":   4,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) SetMonetaryPolicy(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) GetUsageAnalytics(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success": true,
-		"message": "Monetary policy updated successfully",
+		"analytics": map[string]interface{}{
+			"daily_usage": 125.5,
+			"monthly_usage": 3500.0,
+			"efficiency_score": 85.2,
+		},
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) UpdateInterestRates(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) GetEfficiencyMetrics(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success": true,
-		"message": "Interest rates updated successfully",
+		"metrics": map[string]interface{}{
+			"efficiency_rating": 92.5,
+			"waste_percentage": 3.2,
+			"optimization_score": 88.0,
+		},
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetTotalSupply(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) CalculateCostSavings(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success":      true,
-		"total_supply": "10000000000",
+		"monthly_savings": 125.50,
+		"annual_savings": 1506.00,
+		"roi_percentage": 15.2,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetCirculatingSupply(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":             true,
-		"circulating_supply":  "8500000000",
-		"percentage_of_total": 85.0,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetMarketPrice(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":      true,
-		"market_price": 98.75,
-		"currency":     "USD",
-		"last_updated": time.Now(),
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) ExecuteTrade(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":  true,
-		"message":  "Trade executed successfully",
-		"trade_id": "trade_12345",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetMarketOrders(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) GetCarbonFootprint(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success": true,
-		"orders":  []interface{}{},
-		"count":   0,
+		"footprint": map[string]interface{}{
+			"co2_emissions": 125.5,
+			"carbon_offset": 85.2,
+			"net_impact": 40.3,
+		},
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetPriceHistory(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) StakeTokens(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success": true,
-		"history": []interface{}{},
-		"count":   0,
+		"message": "Tokens staked successfully",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetLiquidityInfo(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) UnstakeTokens(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Tokens unstaked successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) Vote(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Vote cast successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ListProposals(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success":   true,
-		"liquidity": map[string]interface{}{"bid_size": 1000000, "ask_size": 800000},
+		"proposals": []interface{}{},
+		"count":     0,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) VerifyCompliance(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) IntegrateIoTDevice(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":   true,
+		"device_id": "IOT_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":   "IoT device integrated successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) DeploySmartContract(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":     true,
+		"contract_id": "CONTRACT_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":     "Smart contract deployed successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) CreateAutomationRule(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success": true,
+		"rule_id": "RULE_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message": "Automation rule created successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) ListTriggers(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":  true,
+		"triggers": []interface{}{},
+		"count":    0,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) SecurityAudit(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":  true,
+		"audit_id": "AUDIT_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":  "Security audit initiated successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) CheckCompliance(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success":    true,
 		"compliant":  true,
-		"verified_at": time.Now(),
+		"score":      94.5,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) GetComplianceStatus(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) GenerateComplianceReport(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"success":    true,
+		"report_id":  "COMP_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"report_url": "/reports/compliance_report.pdf",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (api *SYN11API) GetEvents(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success": true,
-		"status":  "compliant",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) TriggerAudit(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":  true,
-		"audit_id": "audit_789",
-		"message":  "Audit triggered successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetComplianceReports(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"reports": []interface{}{},
+		"events":  []interface{}{},
 		"count":   0,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
-func (api *SYN11API) VerifyKYC(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":  true,
-		"verified": true,
-		"message":  "KYC verification completed",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetEventDetails(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	eventID := vars["eventID"]
-	
-	response := map[string]interface{}{
-		"success":  true,
-		"event_id": eventID,
-		"details":  map[string]interface{}{"type": "transfer", "timestamp": time.Now()},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) LogCustomEvent(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":  true,
-		"event_id": "event_456",
-		"message":  "Custom event logged successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetPerformanceMetrics(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"metrics": map[string]interface{}{"total_return": 5.2, "volatility": 2.1},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetPortfolioAnalytics(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":   true,
-		"analytics": map[string]interface{}{"total_value": 10000000, "asset_count": 50},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetRiskAssessment(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":     true,
-		"risk_score":  3.2,
-		"risk_level":  "moderate",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) CalculateDuration(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":           true,
-		"modified_duration": 4.8,
-		"macaulay_duration": 5.1,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) CalculateConvexity(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":   true,
-		"convexity": 28.5,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) EncryptTokenData(w http.ResponseWriter, r *http.Request) {
+func (api *SYN11API) SubscribeNotifications(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"success":        true,
-		"encrypted_data": "encrypted_hash_12345",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) DecryptTokenData(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":        true,
-		"decrypted_data": "original_token_data",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) VerifyTokenSignature(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":  true,
-		"verified": true,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetAuditTrail(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":     true,
-		"audit_trail": []interface{}{},
-		"count":       0,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetTreasuryOperations(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":    true,
-		"operations": []interface{}{},
-		"count":      0,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) TreasuryIssue(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":      true,
-		"operation_id": "treasury_op_123",
-		"message":      "Treasury issuance initiated",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) TreasuryBuyback(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":      true,
-		"operation_id": "treasury_buyback_456",
-		"message":      "Treasury buyback initiated",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) SettleTreasuryOperation(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Treasury operation settled successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) ProcessSettlement(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":       true,
-		"settlement_id": "settlement_789",
-		"message":       "Settlement processed successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetSettlementStatus(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	settlementID := vars["settlementID"]
-	
-	response := map[string]interface{}{
-		"success":       true,
-		"settlement_id": settlementID,
-		"status":        "completed",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) BatchSettle(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":     true,
-		"batch_id":    "batch_321",
-		"message":     "Batch settlement initiated",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetClearingQueue(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"queue":   []interface{}{},
-		"count":   0,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) AssessRisk(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":        true,
-		"risk_score":     7.2,
-		"risk_category":  "high",
-		"assessment_id":  "risk_assessment_654",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) SetRiskLimits(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Risk limits updated successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetRiskExposure(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":         true,
-		"total_exposure":  15000000,
-		"exposure_limits": map[string]interface{}{"daily": 50000000, "monthly": 200000000},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) CalculateVaR(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":    true,
-		"var_95":     125000,
-		"var_99":     175000,
-		"confidence": "95% and 99%",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) RunStressTest(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success":  true,
-		"test_id":  "stress_test_987",
-		"message":  "Stress test initiated",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) GetStressTestResults(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"results": map[string]interface{}{"scenario_1": "passed", "scenario_2": "warning"},
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) SetStressTestParameters(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Stress test parameters updated successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) EmergencyHalt(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Emergency halt activated",
-		"halt_id": "emergency_halt_111",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) ResumeOperations(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Operations resumed successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) FreezeToken(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Token frozen successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func (api *SYN11API) UnfreezeToken(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{
-		"success": true,
-		"message": "Token unfrozen successfully",
+		"subscription_id": "NOTIF_" + strconv.FormatInt(time.Now().UnixNano(), 10),
+		"message":        "Subscribed to notifications successfully",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

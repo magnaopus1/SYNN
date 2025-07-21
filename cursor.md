@@ -103,13 +103,13 @@ For each task:
 - SYN2369 API (Virtual World Items/Properties) - Module validated ✅
 - **Comprehensive main_api.go Update** - Now supports 49 total APIs ✅
 
-### Batch #13 - CORE MODULE APIs (Priority Foundation)
+### Batch #13 - CORE MODULE APIs (Foundation Priority)
 
 **PRIORITY TARGETS** (create APIs for core infrastructure modules):
-- **Common Module API** - Core utilities and shared functions 🔴 **CRITICAL**
-- **Ledger Module API** - Blockchain ledger operations 🔴 **CRITICAL**
-- **Consensus Module API** - Multi-consensus mechanisms 🔴 **CRITICAL**
-- **Network Module API** - P2P networking and communication 🔴 **CRITICAL**
+- **Cryptography Module API** - Core encryption and security functions 🔴 **CRITICAL**
+- **Storage Module API** - Blockchain data storage and retrieval 🔴 **CRITICAL**
+- **Data Management Module API** - Advanced data handling 🔴 **CRITICAL**
+- **Account & Balance Operations API** - Financial operations 🔴 **CRITICAL**
 
 **NEXT ACTION**: 
 1. Validate core modules have proper implementations

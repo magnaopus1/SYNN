@@ -64,6 +64,7 @@ type SynnergyAPIServer struct {
 	SYN1967API      *SYN1967API
 	SYN2100API      *SYN2100API
 	SYN2200API      *SYN2200API
+	SYN2369API      *SYN2369API
 	SYN2400API      *SYN2400API
 	SYN2500API      *SYN2500API
 	SYN2600API      *SYN2600API
@@ -158,6 +159,7 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.SYN1967API = NewSYN1967API(s.LedgerInstance)
 	s.SYN2100API = NewSYN2100API(s.LedgerInstance)
 	s.SYN2200API = NewSYN2200API(s.LedgerInstance)
+	s.SYN2369API = NewSYN2369API(s.LedgerInstance, &common.SynnergyConsensus{}, &common.SynnergyMutex{})
 	s.SYN2400API = NewSYN2400API(s.LedgerInstance)
 	s.SYN2500API = NewSYN2500API(s.LedgerInstance)
 	s.SYN2600API = NewSYN2600API(s.LedgerInstance)
@@ -178,7 +180,7 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.SYN5000API = NewSYN5000API(s.LedgerInstance, &common.SynnergyConsensus{}, &common.SynnergyMutex{})
 	s.SYN6000API = NewSYN6000API(s.LedgerInstance)
 	
-	log.Printf("✅ Initialized %d Token APIs", 43)
+	log.Printf("✅ Initialized %d Token APIs", 44)
 }
 
 // registerRoutes registers all API routes with their respective modules
@@ -223,6 +225,7 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	s.SYN1967API.RegisterRoutes(apiV1)
 	s.SYN2100API.RegisterRoutes(apiV1)
 	s.SYN2200API.RegisterRoutes(apiV1)
+	s.SYN2369API.RegisterRoutes(apiV1)
 	s.SYN2400API.RegisterRoutes(apiV1)
 	s.SYN2500API.RegisterRoutes(apiV1)
 	s.SYN2600API.RegisterRoutes(apiV1)
@@ -249,7 +252,7 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	apiV1.HandleFunc("/system/metrics", s.GetSystemMetrics).Methods("GET")
 	apiV1.HandleFunc("/system/tokens", s.GetRegisteredTokens).Methods("GET")
 	
-	log.Printf("✅ Registered routes for %d Token APIs + %d Core APIs", 43, 5)
+	log.Printf("✅ Registered routes for %d Token APIs + %d Core APIs", 44, 5)
 }
 
 // Start starts the API server
@@ -265,7 +268,7 @@ func (s *SynnergyAPIServer) Start() error {
 	// Start server
 	log.Printf("🚀 Starting Synnergy Network API Server on port %s", s.Port)
 	log.Printf("📚 API Documentation available at: http://localhost:%s/", s.Port)
-	log.Printf("🔗 Total APIs Registered: %d Token APIs + %d Core APIs", 43, 5)
+	log.Printf("🔗 Total APIs Registered: %d Token APIs + %d Core APIs", 44, 5)
 	
 	return http.ListenAndServe(":"+s.Port, handler)
 }
@@ -285,8 +288,8 @@ func (s *SynnergyAPIServer) HealthCheck(w http.ResponseWriter, r *http.Request) 
 		},
 		"registered_apis": map[string]int{
 			"core_apis":  5,
-			"token_apis": 43,
-			"total_apis": 48,
+			"token_apis": 44,
+			"total_apis": 49,
 		},
 	}
 	
@@ -380,14 +383,14 @@ func (s *SynnergyAPIServer) GetSystemInfo(w http.ResponseWriter, r *http.Request
 		"network": "Synnergy Mainnet",
 		"registered_apis": map[string]interface{}{
 			"core_apis":  5,
-			"token_apis": 43,
-			"total_apis": 48,
+			"token_apis": 44,
+			"total_apis": 49,
 		},
 		"supported_standards": []string{
 			"SYN10", "SYN11", "SYN12", "SYN20", "SYN131", "SYN130", "SYN200", "SYN300",
 			"SYN721", "SYN722", "SYN845", "SYN1000", "SYN1100", "SYN1200", "SYN1300",
 			"SYN1301", "SYN1401", "SYN1500", "SYN1600", "SYN1700", "SYN1800", "SYN1900",
-			"SYN1967", "SYN2100", "SYN2200", "SYN2400", "SYN2500", "SYN2600", "SYN2700",
+			"SYN1967", "SYN2100", "SYN2200", "SYN2369", "SYN2400", "SYN2500", "SYN2600", "SYN2700",
 			"SYN2800", "SYN2900", "SYN3000", "SYN3100", "SYN3200", "SYN3300", "SYN3400",
 			"SYN3900", "SYN4000", "SYN4200", "SYN4300", "SYN4700", "SYN4900", "SYN5000", "SYN6000",
 		},
@@ -425,9 +428,9 @@ func (s *SynnergyAPIServer) GetSystemStatus(w http.ResponseWriter, r *http.Reque
 func (s *SynnergyAPIServer) GetSystemMetrics(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"api_metrics": map[string]interface{}{
-			"total_apis_registered": 48,
+			"total_apis_registered": 49,
 			"core_apis":            5,
-			"token_apis":           43,
+			"token_apis":           44,
 			"total_endpoints":      "1000+",
 		},
 		"performance": map[string]interface{}{
@@ -470,6 +473,7 @@ func (s *SynnergyAPIServer) GetRegisteredTokens(w http.ResponseWriter, r *http.R
 		{"standard": "SYN1967", "name": "Escrow Token", "endpoints": "/api/v1/syn1967/*"},
 		{"standard": "SYN2100", "name": "Debt Token", "endpoints": "/api/v1/syn2100/*"},
 		{"standard": "SYN2200", "name": "Equity Token", "endpoints": "/api/v1/syn2200/*"},
+		{"standard": "SYN2369", "name": "Virtual World Item Token", "endpoints": "/api/v1/syn2369/*"},
 		{"standard": "SYN2400", "name": "Loan Token", "endpoints": "/api/v1/syn2400/*"},
 		{"standard": "SYN2500", "name": "Mortgage Token", "endpoints": "/api/v1/syn2500/*"},
 		{"standard": "SYN2600", "name": "Legal Document Token", "endpoints": "/api/v1/syn2600/*"},

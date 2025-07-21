@@ -397,3 +397,75 @@ This document tracks the complete development progress of the Synnergy Network b
 - **P2P Port**: 8081
 
 **PHASE 4 STATUS: COMPLETE ✅**
+
+---
+
+## 🔄 AUTOMATED TASK EXECUTION PROMPT
+
+**INSTRUCTION FOR CURSOR AI:**
+
+You are now in continuous development mode for the Synnergy Network blockchain. Follow this systematic approach:
+
+### 📋 STEP 1: ASSESSMENT
+1. **Read** `cursor.md`, `task_progress.md`, and `cursor_tasklist.md`
+2. **Check** current progress tables for priority tasks
+3. **Identify** next red (🔴) tasks that need completion
+4. **Prioritize** based on dependency chain: APIs → CLIs → Opcodes → Scripts → Tests
+
+### 🎯 STEP 2: EXECUTION RULES
+- **RED TASKS FIRST**: Always prioritize 🔴 (red) tasks before amber/green
+- **NO AMBER SKIPPING**: If amber (🟡) tasks exist, complete them before new red tasks
+- **MODULE COMPLETION**: Finish each module completely (API + CLI + Opcodes + VM + Gas)
+- **CONTINUOUS COMMITS**: Commit after every 2-3 completed tasks
+
+### 🚀 STEP 3: TASK EXECUTION
+1. **Select** the next priority red task from `cursor_tasklist.md`
+2. **Complete** the task fully (write code, implement functionality)
+3. **Update** progress in `task_progress.md` (change 🔴 to 🟡 to 🟢)
+4. **Update** tasklist in `cursor_tasklist.md` (mark completed tasks 🟢)
+5. **Update** `cursor.md` with progress summary
+6. **Commit** changes with descriptive message
+
+### 📊 STEP 4: CURRENT PRIORITY ORDER
+1. **Next RED APIs** (45 remaining): smart_contract_api.go, wallet_api.go, tokens_api.go
+2. **Next RED CLIs** (47 remaining): network_cli.go, transactions_cli.go
+3. **Opcodes System** (all modules need opcodes)
+4. **Gas Calculation** (all functions need gas fees)
+5. **VM Integration** (all modules need SNVM integration)
+
+### 🔍 STEP 5: VALIDATION
+- **Test** each completed component
+- **Fix** any compilation/runtime errors immediately  
+- **Verify** functionality works as expected
+- **Update** documentation as needed
+
+### 💾 STEP 6: CONTINUOUS COMMIT STRATEGY
+**Commit Pattern**: "feat(module): Complete [task_name] - Progress [X/Y]"
+**Example**: "feat(smart_contract): Complete smart_contract_api.go - Progress APIs 4/48"
+
+### 🔁 STEP 7: LOOP EXECUTION
+**After completing each task:**
+1. Re-read the three tracking files
+2. Update progress indicators
+3. Identify next red task
+4. Execute immediately without waiting for user input
+5. Continue until all red tasks become green
+
+### 🚨 CRITICAL RULES:
+- **NEVER SKIP**: Don't skip tasks or mark as complete without full implementation
+- **QUALITY FIRST**: Every function must be fully implemented with error handling
+- **ENTERPRISE GRADE**: All code must be production-ready with proper logging
+- **COMPREHENSIVE**: APIs must have all CRUD operations, CLIs must have all commands
+
+### 📈 SUCCESS METRICS:
+- **Module Progress Table**: Track API/CLI/Opcodes/VM completion per module
+- **Script Progress Table**: Track smart contract writing/testing/completion
+- **Overall Progress Table**: Track system-wide completion percentage
+
+**EXECUTE THIS LOOP CONTINUOUSLY UNTIL ALL TASKS ARE 🟢 GREEN**
+
+---
+
+**CURRENT STATUS**: Ready for next task execution
+**NEXT ACTION**: Create smart_contract_api.go (Priority: 🔴 RED)
+**ESTIMATED COMPLETION**: 6-8 months of continuous development

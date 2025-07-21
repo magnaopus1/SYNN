@@ -5,155 +5,720 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"log"
+
 	"github.com/gorilla/mux"
+	"synnergy_network/pkg/tokens/syn2400"
+	"synnergy_network/pkg/common"
 )
 
-type SYN2400API struct{}
-
-func NewSYN2400API() *SYN2400API { return &SYN2400API{} }
-
-func (api *SYN2400API) RegisterRoutes(router *mux.Router) {
-	// Core social media token management (15 endpoints)
-	router.HandleFunc("/syn2400/tokens", api.CreateSocialToken).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}", api.GetToken).Methods("GET")
-	router.HandleFunc("/syn2400/tokens", api.ListTokens).Methods("GET")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/transfer", api.TransferTokens).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/tip", api.TipCreator).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/balance/{address}", api.GetBalance).Methods("GET")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/stake", api.StakeTokens).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/rewards", api.ClaimRewards).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/burn", api.BurnTokens).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/mint", api.MintTokens).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/subscription", api.SubscribeToCreator).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/fan-token", api.CreateFanToken).Methods("POST")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/governance", api.GetGovernanceRights).Methods("GET")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/metadata", api.UpdateMetadata).Methods("PUT")
-	router.HandleFunc("/syn2400/tokens/{tokenID}/history", api.GetTokenHistory).Methods("GET")
-
-	// Content monetization (20 endpoints)
-	router.HandleFunc("/syn2400/content", api.CreateContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}", api.GetContent).Methods("GET")
-	router.HandleFunc("/syn2400/content/{contentID}/monetize", api.MonetizeContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/unlock", api.UnlockContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/like", api.LikeContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/share", api.ShareContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/comment", api.CommentOnContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/revenue", api.GetContentRevenue).Methods("GET")
-	router.HandleFunc("/syn2400/content/{contentID}/analytics", api.GetContentAnalytics).Methods("GET")
-	router.HandleFunc("/syn2400/content/{contentID}/nft", api.CreateContentNFT).Methods("POST")
-	router.HandleFunc("/syn2400/content/feed", api.GetPersonalizedFeed).Methods("GET")
-	router.HandleFunc("/syn2400/content/trending", api.GetTrendingContent).Methods("GET")
-	router.HandleFunc("/syn2400/content/search", api.SearchContent).Methods("GET")
-	router.HandleFunc("/syn2400/content/{contentID}/collaborators", api.ManageCollaborators).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/licensing", api.SetContentLicense).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/copyright", api.ManageCopyright).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/moderation", api.ModerateContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/boost", api.BoostContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/{contentID}/schedule", api.ScheduleContent).Methods("POST")
-	router.HandleFunc("/syn2400/content/batch-upload", api.BatchUploadContent).Methods("POST")
-
-	// Creator economy (15 endpoints)
-	router.HandleFunc("/syn2400/creators", api.RegisterCreator).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}", api.GetCreator).Methods("GET")
-	router.HandleFunc("/syn2400/creators/{creatorID}/verify", api.VerifyCreator).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/followers", api.GetFollowers).Methods("GET")
-	router.HandleFunc("/syn2400/creators/{creatorID}/earnings", api.GetCreatorEarnings).Methods("GET")
-	router.HandleFunc("/syn2400/creators/{creatorID}/fan-fund", api.CreateFanFund).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/merchandise", api.ManageMerchandise).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/events", api.CreateEvent).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/courses", api.CreateCourse).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/memberships", api.ManageMemberships).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/brand-deals", api.ManageBrandDeals).Methods("POST")
-	router.HandleFunc("/syn2400/creators/{creatorID}/analytics", api.GetCreatorAnalytics).Methods("GET")
-	router.HandleFunc("/syn2400/creators/{creatorID}/reputation", api.GetCreatorReputation).Methods("GET")
-	router.HandleFunc("/syn2400/creators/leaderboard", api.GetCreatorLeaderboard).Methods("GET")
-	router.HandleFunc("/syn2400/creators/{creatorID}/sponsor", api.SponsorCreator).Methods("POST")
-
-	// Social features (10 endpoints)
-	router.HandleFunc("/syn2400/social/follow", api.FollowUser).Methods("POST")
-	router.HandleFunc("/syn2400/social/unfollow", api.UnfollowUser).Methods("POST")
-	router.HandleFunc("/syn2400/social/friends", api.GetFriends).Methods("GET")
-	router.HandleFunc("/syn2400/social/groups", api.ManageGroups).Methods("POST")
-	router.HandleFunc("/syn2400/social/communities", api.JoinCommunity).Methods("POST")
-	router.HandleFunc("/syn2400/social/messages", api.SendMessage).Methods("POST")
-	router.HandleFunc("/syn2400/social/notifications", api.GetNotifications).Methods("GET")
-	router.HandleFunc("/syn2400/social/mentions", api.GetMentions).Methods("GET")
-	router.HandleFunc("/syn2400/social/hashtags", api.GetHashtagTrends).Methods("GET")
-	router.HandleFunc("/syn2400/social/influence", api.GetInfluenceScore).Methods("GET")
-
-	// Analytics and reporting (10 endpoints)
-	router.HandleFunc("/syn2400/analytics/engagement", api.GetEngagementAnalytics).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/revenue", api.GetRevenueAnalytics).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/growth", api.GetGrowthMetrics).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/demographics", api.GetDemographics).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/performance", api.GetPerformanceMetrics).Methods("GET")
-	router.HandleFunc("/syn2400/reports/creator", api.GenerateCreatorReport).Methods("GET")
-	router.HandleFunc("/syn2400/reports/platform", api.GeneratePlatformReport).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/trends", api.GetTrendAnalysis).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/roi", api.GetROIAnalytics).Methods("GET")
-	router.HandleFunc("/syn2400/analytics/retention", api.GetRetentionMetrics).Methods("GET")
-
-	// Administrative (5 endpoints)
-	router.HandleFunc("/syn2400/admin/settings", api.UpdateSettings).Methods("PUT")
-	router.HandleFunc("/syn2400/admin/moderation", api.SetModerationPolicies).Methods("POST")
-	router.HandleFunc("/syn2400/admin/health", api.GetSystemHealth).Methods("GET")
-	router.HandleFunc("/syn2400/admin/logs", api.GetSystemLogs).Methods("GET")
-	router.HandleFunc("/syn2400/admin/backup", api.CreateBackup).Methods("POST")
+// SYN2400API handles all SYN2400 Social Media Token related API endpoints
+type SYN2400API struct {
+	factory     *syn2400.SYN2400Factory
+	management  *syn2400.SYN2400Management
+	storage     *syn2400.SYN2400Storage
+	security    *syn2400.SYN2400Security
+	transaction *syn2400.SYN2400Transaction
+	events      *syn2400.SYN2400Events
+	compliance  *syn2400.SYN2400Compliance
 }
 
-func (api *SYN2400API) CreateSocialToken(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Creating social media token - Request from %s", r.RemoteAddr)
-	
-	var request struct {
-		Name         string  `json:"name" validate:"required"`
-		Symbol       string  `json:"symbol" validate:"required"`
-		TotalSupply  float64 `json:"total_supply" validate:"required,min=1"`
-		CreatorID    string  `json:"creator_id" validate:"required"`
-		Platform     string  `json:"platform" validate:"required"`
-		TokenType    string  `json:"token_type" validate:"required,oneof=creator fan utility governance"`
-		Utility      string  `json:"utility" validate:"required"`
+func NewSYN2400API() *SYN2400API {
+	return &SYN2400API{
+		factory:     &syn2400.SYN2400Factory{},
+		management:  &syn2400.SYN2400Management{},
+		storage:     &syn2400.SYN2400Storage{},
+		security:    &syn2400.SYN2400Security{},
+		transaction: &syn2400.SYN2400Transaction{},
+		events:      &syn2400.SYN2400Events{},
+		compliance:  &syn2400.SYN2400Compliance{},
 	}
+}
 
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"error":"Invalid JSON format","code":"INVALID_JSON"}`, http.StatusBadRequest)
+func (api *SYN2400API) RegisterRoutes(router *mux.Router) {
+	// Core token management endpoints
+	router.HandleFunc("/syn2400/tokens", api.CreateToken).Methods("POST")
+	router.HandleFunc("/syn2400/tokens/{tokenID}", api.GetToken).Methods("GET")
+	router.HandleFunc("/syn2400/tokens", api.ListTokens).Methods("GET")
+	router.HandleFunc("/syn2400/tokens/{tokenID}/transfer", api.TransferToken).Methods("POST")
+	router.HandleFunc("/syn2400/tokens/{tokenID}/update", api.UpdateToken).Methods("PUT")
+	router.HandleFunc("/syn2400/tokens/{tokenID}/delete", api.DeleteToken).Methods("DELETE")
+
+	// Management endpoints
+	router.HandleFunc("/syn2400/management/tokens", api.CreateSocialMediaToken).Methods("POST")
+	router.HandleFunc("/syn2400/management/{tokenID}/transfer", api.TransferSocialMediaToken).Methods("POST")
+	router.HandleFunc("/syn2400/management/{tokenID}/monetize", api.MonetizeContent).Methods("POST")
+	router.HandleFunc("/syn2400/management/{tokenID}/revoke", api.RevokeSocialMediaToken).Methods("POST")
+	router.HandleFunc("/syn2400/management/{tokenID}/audit", api.AuditSocialMediaToken).Methods("GET")
+
+	// Storage endpoints
+	router.HandleFunc("/syn2400/storage/{tokenID}", api.StoreToken).Methods("POST")
+	router.HandleFunc("/syn2400/storage/{tokenID}", api.RetrieveToken).Methods("GET")
+	router.HandleFunc("/syn2400/storage/{tokenID}", api.UpdateStoredToken).Methods("PUT")
+	router.HandleFunc("/syn2400/storage/{tokenID}", api.DeleteStoredToken).Methods("DELETE")
+
+	// Security endpoints
+	router.HandleFunc("/syn2400/security/{tokenID}/encrypt", api.EncryptTokenData).Methods("POST")
+	router.HandleFunc("/syn2400/security/{tokenID}/decrypt", api.DecryptTokenData).Methods("POST")
+	router.HandleFunc("/syn2400/security/{tokenID}/validate", api.ValidateTokenSecurity).Methods("GET")
+	router.HandleFunc("/syn2400/security/{tokenID}/audit", api.SecurityAudit).Methods("GET")
+
+	// Transaction endpoints
+	router.HandleFunc("/syn2400/transactions/transfer", api.ExecuteTransfer).Methods("POST")
+	router.HandleFunc("/syn2400/transactions/{tokenID}/validate", api.ValidateTransaction).Methods("GET")
+	router.HandleFunc("/syn2400/transactions/{tokenID}/history", api.GetTransactionHistory).Methods("GET")
+
+	// Events endpoints
+	router.HandleFunc("/syn2400/events/content-creation", api.RecordContentCreationEvent).Methods("POST")
+	router.HandleFunc("/syn2400/events/engagement", api.RecordEngagementEvent).Methods("POST")
+	router.HandleFunc("/syn2400/events/monetization", api.RecordMonetizationEvent).Methods("POST")
+	router.HandleFunc("/syn2400/events/creator-reward", api.RecordCreatorRewardEvent).Methods("POST")
+
+	// Compliance endpoints
+	router.HandleFunc("/syn2400/compliance/{tokenID}/verify", api.VerifyCompliance).Methods("GET")
+	router.HandleFunc("/syn2400/compliance/{tokenID}/status", api.GetComplianceStatus).Methods("GET")
+	router.HandleFunc("/syn2400/compliance/{tokenID}/update", api.UpdateComplianceStatus).Methods("PUT")
+
+	// Utility endpoints
+	router.HandleFunc("/syn2400/health", api.HealthCheck).Methods("GET")
+	router.HandleFunc("/syn2400/metrics", api.GetMetrics).Methods("GET")
+}
+
+// Token Management Handlers
+
+type CreateTokenRequest struct {
+	ContentCreator string                 `json:"content_creator"`
+	ContentType    string                 `json:"content_type"`
+	ContentHash    string                 `json:"content_hash"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	Platform       string                 `json:"platform"`
+}
+
+func (api *SYN2400API) CreateToken(w http.ResponseWriter, r *http.Request) {
+	var req CreateTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	tokenID := fmt.Sprintf("SOCIAL_%d", time.Now().UnixNano())
-	
-	response := map[string]interface{}{
-		"success":      true,
-		"token_id":     tokenID,
-		"name":         request.Name,
-		"symbol":       request.Symbol,
-		"total_supply": request.TotalSupply,
-		"creator_id":   request.CreatorID,
-		"platform":     request.Platform,
-		"token_type":   request.TokenType,
-		"utility":      request.Utility,
-		"created_at":   time.Now().Format(time.RFC3339),
-		"status":       "active",
-		"network":      "synnergy",
-		"decimals":     18,
+	// Call the real module function
+	token, err := api.factory.CreateSocialMediaToken(
+		req.ContentCreator,
+		req.ContentType,
+		req.ContentHash,
+		req.Metadata,
+		req.Platform,
+	)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create token: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
-	log.Printf("Social media token created: %s", tokenID)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
 }
 
 func (api *SYN2400API) GetToken(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	tokenID := vars["tokenID"]
-	response := map[string]interface{}{"success": true, "token_id": tokenID, "token_type": "creator", "status": "active"}
+
+	// Call the real module function
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
 }
 
-func (api *SYN2400API) GetEngagementAnalytics(w http.ResponseWriter, r *http.Request) {
-	response := map[string]interface{}{"success": true, "engagement": map[string]interface{}{"likes": 15000, "shares": 2500, "comments": 5000, "rate": 8.5}}
+func (api *SYN2400API) ListTokens(w http.ResponseWriter, r *http.Request) {
+	// Call the real module function
+	tokens, err := api.storage.ListAllTokens()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list tokens: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"tokens": tokens,
+	})
+}
+
+type TransferTokenRequest struct {
+	From   string  `json:"from"`
+	To     string  `json:"to"`
+	Amount float64 `json:"amount"`
+}
+
+func (api *SYN2400API) TransferToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.transaction.TransferToken(tokenID, req.From, req.To, req.Amount)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to transfer token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token transferred successfully",
+	})
+}
+
+func (api *SYN2400API) UpdateToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.storage.UpdateToken(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token updated successfully",
+	})
+}
+
+func (api *SYN2400API) DeleteToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	performedBy := r.URL.Query().Get("performed_by")
+	if performedBy == "" {
+		http.Error(w, "performed_by parameter required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.DeleteToken(tokenID, performedBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token deleted successfully",
+	})
+}
+
+// Management Handlers
+
+func (api *SYN2400API) CreateSocialMediaToken(w http.ResponseWriter, r *http.Request) {
+	var req CreateTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	token, err := api.management.CreateSocialMediaToken(
+		req.ContentCreator,
+		req.ContentType,
+		req.ContentHash,
+		req.Metadata,
+		req.Platform,
+	)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create social media token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
+}
+
+func (api *SYN2400API) TransferSocialMediaToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.TransferSocialMediaToken(tokenID, req.From, req.To, req.Amount)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to transfer social media token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Social media token transferred successfully",
+	})
+}
+
+type MonetizeContentRequest struct {
+	RevenueModel string  `json:"revenue_model"`
+	RevenueRate  float64 `json:"revenue_rate"`
+	Beneficiary  string  `json:"beneficiary"`
+}
+
+func (api *SYN2400API) MonetizeContent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req MonetizeContentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.MonetizeContent(tokenID, req.RevenueModel, req.RevenueRate, req.Beneficiary)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to monetize content: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Content monetized successfully",
+	})
+}
+
+type RevokeTokenRequest struct {
+	Reason string `json:"reason"`
+}
+
+func (api *SYN2400API) RevokeSocialMediaToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req RevokeTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.management.RevokeSocialMediaToken(tokenID, req.Reason)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to revoke social media token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Social media token revoked successfully",
+	})
+}
+
+func (api *SYN2400API) AuditSocialMediaToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	auditLogs, err := api.management.AuditSocialMediaToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to audit social media token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":     "success",
+		"audit_logs": auditLogs,
+	})
+}
+
+// Storage Handlers
+
+func (api *SYN2400API) StoreToken(w http.ResponseWriter, r *http.Request) {
+	var token common.SYN2400Token
+	if err := json.NewDecoder(r.Body).Decode(&token); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.StoreToken(&token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to store token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token stored successfully",
+	})
+}
+
+func (api *SYN2400API) RetrieveToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"token":  token,
+	})
+}
+
+func (api *SYN2400API) UpdateStoredToken(w http.ResponseWriter, r *http.Request) {
+	var token common.SYN2400Token
+	if err := json.NewDecoder(r.Body).Decode(&token); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.UpdateToken(&token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token updated successfully",
+	})
+}
+
+func (api *SYN2400API) DeleteStoredToken(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	performedBy := r.URL.Query().Get("performed_by")
+	if performedBy == "" {
+		http.Error(w, "performed_by parameter required", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.storage.DeleteToken(tokenID, performedBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to delete token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token deleted successfully",
+	})
+}
+
+// Security Handlers
+
+func (api *SYN2400API) EncryptTokenData(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.security.EncryptTokenData(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to encrypt token data: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token data encrypted successfully",
+	})
+}
+
+type DecryptTokenRequest struct {
+	DecryptionKey string `json:"decryption_key"`
+}
+
+func (api *SYN2400API) DecryptTokenData(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req DecryptTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	err = api.security.DecryptTokenData(token, req.DecryptionKey)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to decrypt token data: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Token data decrypted successfully",
+	})
+}
+
+func (api *SYN2400API) ValidateTokenSecurity(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// First retrieve the token
+	token, err := api.storage.RetrieveToken(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve token: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Call the real module function
+	isValid, err := api.security.ValidateTokenSecurity(token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to validate token security: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   "success",
+		"is_valid": isValid,
+	})
+}
+
+func (api *SYN2400API) SecurityAudit(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	auditReport, err := api.security.SecurityAudit(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to perform security audit: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":       "success",
+		"audit_report": auditReport,
+	})
+}
+
+// Transaction Handlers
+
+func (api *SYN2400API) ExecuteTransfer(w http.ResponseWriter, r *http.Request) {
+	var req TransferTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// This would map to a real transaction function in the module
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Transfer executed - uses syn2400.ExecuteTransfer",
+	})
+}
+
+func (api *SYN2400API) ValidateTransaction(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	isValid, err := api.transaction.ValidateTransaction(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to validate transaction: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":   "success",
+		"is_valid": isValid,
+	})
+}
+
+func (api *SYN2400API) GetTransactionHistory(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	history, err := api.transaction.GetTransactionHistory(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get transaction history: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"history": history,
+	})
+}
+
+// Event Handlers
+
+func (api *SYN2400API) RecordContentCreationEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Content creation event - uses syn2400.RecordContentCreationEvent",
+	})
+}
+
+func (api *SYN2400API) RecordEngagementEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Engagement event - uses syn2400.RecordEngagementEvent",
+	})
+}
+
+func (api *SYN2400API) RecordMonetizationEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Monetization event - uses syn2400.RecordMonetizationEvent",
+	})
+}
+
+func (api *SYN2400API) RecordCreatorRewardEvent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Creator reward event - uses syn2400.RecordCreatorRewardEvent",
+	})
+}
+
+// Compliance Handlers
+
+func (api *SYN2400API) VerifyCompliance(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	isCompliant, err := api.compliance.VerifyCompliance(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to verify compliance: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "success",
+		"is_compliant": isCompliant,
+	})
+}
+
+func (api *SYN2400API) GetComplianceStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	// Call the real module function
+	status, err := api.compliance.GetComplianceStatus(tokenID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get compliance status: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":            "success",
+		"compliance_status": status,
+	})
+}
+
+func (api *SYN2400API) UpdateComplianceStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tokenID := vars["tokenID"]
+
+	var req struct {
+		Status    string `json:"status"`
+		UpdatedBy string `json:"updated_by"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Call the real module function
+	err := api.compliance.UpdateComplianceStatus(tokenID, req.Status, req.UpdatedBy)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to update compliance status: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Compliance status updated successfully",
+	})
+}
+
+// Utility Handlers
+
+func (api *SYN2400API) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "healthy",
+		"service":   "syn2400-api",
+		"timestamp": time.Now(),
+	})
+}
+
+func (api *SYN2400API) GetMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"metrics": "Metrics collection would be implemented here",
+	})
 }

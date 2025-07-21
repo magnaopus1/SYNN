@@ -38,6 +38,12 @@ type SynnergyAPIServer struct {
 	DeFiAPI          *DeFiAPI
 	GovernanceAPI    *GovernanceAPI
 	
+	// Token API modules - Batch #11 Module-Validated APIs
+	SYN3900API       *SYN3900API
+	SYN4700API       *SYN4700API
+	SYN4900API       *SYN4900API
+	SYN5000API       *SYN5000API
+	
 	// Infrastructure components
 	NetworkManager    *network.NetworkManager
 	TransactionPool   *transactions.TransactionPool
@@ -85,6 +91,15 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.SmartContractAPI = NewSmartContractAPI(s.LedgerInstance)
 	s.WalletAPI = NewWalletAPI(s.LedgerInstance, s.NetworkManager)
 	
+	// Initialize Batch #11 Module-Validated Token APIs
+	synnergyConsensus := &common.SynnergyConsensus{} // Initialize properly in production
+	synnergyMutex := &common.SynnergyMutex{}         // Initialize properly in production
+	
+	s.SYN3900API = NewSYN3900API(s.LedgerInstance, synnergyConsensus, synnergyMutex)
+	s.SYN4700API = NewSYN4700API(s.LedgerInstance, synnergyConsensus, synnergyMutex)
+	s.SYN4900API = NewSYN4900API(s.LedgerInstance, synnergyConsensus, synnergyMutex)
+	s.SYN5000API = NewSYN5000API(s.LedgerInstance, synnergyConsensus, synnergyMutex)
+	
 	// TODO: Initialize other API modules as they are created
 	// s.TokensAPI = NewTokensAPI(...)
 	// s.DeFiAPI = NewDeFiAPI(...)
@@ -106,6 +121,12 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	s.TransactionsAPI.RegisterRoutes(apiV1)
 	s.SmartContractAPI.RegisterRoutes(apiV1)
 	s.WalletAPI.RegisterRoutes(apiV1)
+	
+	// Register Batch #11 Module-Validated Token API Routes
+	s.SYN3900API.RegisterRoutes(apiV1)
+	s.SYN4700API.RegisterRoutes(apiV1)
+	s.SYN4900API.RegisterRoutes(apiV1)
+	s.SYN5000API.RegisterRoutes(apiV1)
 	
 	// TODO: Register other module routes as they are created
 	// s.TokensAPI.RegisterRoutes(apiV1)

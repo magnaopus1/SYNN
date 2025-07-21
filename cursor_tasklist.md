@@ -7,8 +7,8 @@
 | Task | Completed |
 |------|-----------|
 | **Phase 5: Complete remaining APIs (45/48 modules)** | 🔴 |
-| Create smart_contract_api.go | 🔴 |
-| Create wallet_api.go | 🔴 |
+| Create smart_contract_api.go | 🟢 |
+| Create wallet_api.go | 🟢 |
 | Create tokens_api.go | 🔴 |
 | Create defi_api.go | 🔴 |
 | Create governance_api.go | 🔴 |

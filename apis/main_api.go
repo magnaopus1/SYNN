@@ -82,10 +82,10 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.ConsensusAPI = NewConsensusAPI(s.LedgerInstance)
 	s.NetworkAPI = NewNetworkAPI(s.NetworkManager, s.LedgerInstance)
 	s.TransactionsAPI = NewTransactionsAPI(s.TransactionPool, s.LedgerInstance)
+	s.SmartContractAPI = NewSmartContractAPI(s.LedgerInstance)
+	s.WalletAPI = NewWalletAPI(s.LedgerInstance, s.NetworkManager)
 	
 	// TODO: Initialize other API modules as they are created
-	// s.SmartContractAPI = NewSmartContractAPI(...)
-	// s.WalletAPI = NewWalletAPI(...)
 	// s.TokensAPI = NewTokensAPI(...)
 	// s.DeFiAPI = NewDeFiAPI(...)
 	// s.GovernanceAPI = NewGovernanceAPI(...)
@@ -104,10 +104,10 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	s.ConsensusAPI.RegisterRoutes(apiV1)
 	s.NetworkAPI.RegisterRoutes(apiV1)
 	s.TransactionsAPI.RegisterRoutes(apiV1)
+	s.SmartContractAPI.RegisterRoutes(apiV1)
+	s.WalletAPI.RegisterRoutes(apiV1)
 	
 	// TODO: Register other module routes as they are created
-	// s.SmartContractAPI.RegisterRoutes(apiV1)
-	// s.WalletAPI.RegisterRoutes(apiV1)
 	// s.TokensAPI.RegisterRoutes(apiV1)
 	// s.DeFiAPI.RegisterRoutes(apiV1)
 	// s.GovernanceAPI.RegisterRoutes(apiV1)

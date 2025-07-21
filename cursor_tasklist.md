@@ -10,7 +10,7 @@
 | Create smart_contract_api.go | 🟢 |
 | Create wallet_api.go | 🟢 |
 | Create syn10_api.go | 🟢 |
-| Create syn11_api.go | 🔴 |
+| Create syn11_api.go | 🟢 |
 | Create syn12_api.go | 🔴 |
 | Create syn20_api.go | 🔴 |
 | Create syn130_api.go | 🔴 |

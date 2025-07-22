@@ -7,19 +7,19 @@ import (
 	"net/http"
 	"time"
 
+	"synnergy_network/pkg/common"
 	"synnergy_network/pkg/consensus"
-	"synnergy_network/pkg/network"
-	"synnergy_network/pkg/transactions"
-	"synnergy_network/pkg/smart_contract"
-	"synnergy_network/pkg/wallet"
-	"synnergy_network/pkg/tokens"
 	"synnergy_network/pkg/defi"
 	"synnergy_network/pkg/governance"
 	"synnergy_network/pkg/ledger"
-	"synnergy_network/pkg/common"
+	"synnergy_network/pkg/network"
+	"synnergy_network/pkg/smart_contract"
+	"synnergy_network/pkg/tokens"
+	"synnergy_network/pkg/transactions"
+	"synnergy_network/pkg/wallet"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
 // SynnergyAPIServer represents the main API server for the Synnergy Network
@@ -27,68 +27,70 @@ type SynnergyAPIServer struct {
 	Router         *mux.Router
 	LedgerInstance *ledger.Ledger
 	Port           string
-	
+
 	// Core API modules
-	ConsensusAPI     *ConsensusAPI
-	NetworkAPI       *NetworkAPI
-	TransactionsAPI  *TransactionsAPI
-	SmartContractAPI *SmartContractAPI
-	WalletAPI        *WalletAPI
-	CryptographyAPI  *CryptographyAPI
-	StorageAPI       *StorageAPI
+	ConsensusAPI      *ConsensusAPI
+	NetworkAPI        *NetworkAPI
+	TransactionsAPI   *TransactionsAPI
+	SmartContractAPI  *SmartContractAPI
+	WalletAPI         *WalletAPI
+	CryptographyAPI   *CryptographyAPI
+	StorageAPI        *StorageAPI
 	DataManagementAPI *DataManagementAPI
 	AccountBalanceAPI *AccountBalanceAPI
-	TokensAPI        *TokensAPI
-	DeFiAPI          *DeFiAPI
-	GovernanceAPI    *GovernanceAPI
-	
+	TokensAPI         *TokensAPI
+	DeFiAPI           *DeFiAPI
+	GovernanceAPI     *GovernanceAPI
+	DAOAPI            *DAOAPI
+	ComplianceAPI     *ComplianceAPI
+
 	// Complete Token API Registry - All 43 Token Standards
-	SYN10API        *SYN10API
-	SYN11API        *SYN11API  
-	SYN12API        *SYN12API
-	SYN20API        *SYN20API
-	SYN131API       *SYN131API
-	SYN130API       *SYN130API
-	SYN200API       *SYN200API
-	SYN300API       *SYN300API
-	SYN721API       *SYN721API
-	SYN722API       *SYN722API
-	SYN845API       *SYN845API
-	SYN1000API      *SYN1000API
-	SYN1100API      *SYN1100API
-	SYN1200API      *SYN1200API
-	SYN1300API      *SYN1300API
-	SYN1301API      *SYN1301API
-	SYN1401API      *SYN1401API
-	SYN1500API      *SYN1500API
-	SYN1600API      *SYN1600API
-	SYN1700API      *SYN1700API
-	SYN1800API      *SYN1800API
-	SYN1900API      *SYN1900API
-	SYN1967API      *SYN1967API
-	SYN2100API      *SYN2100API
-	SYN2200API      *SYN2200API
-	SYN2369API      *SYN2369API
-	SYN2400API      *SYN2400API
-	SYN2500API      *SYN2500API
-	SYN2600API      *SYN2600API
-	SYN2700API      *SYN2700API
-	SYN2800API      *SYN2800API
-	SYN2900API      *SYN2900API
-	SYN3000API      *SYN3000API
-	SYN3100API      *SYN3100API
-	SYN3200API      *SYN3200API
-	SYN3300API      *SYN3300API
-	SYN3400API      *SYN3400API
-	SYN3900API      *SYN3900API
-	SYN4000API      *SYN4000API
-	SYN4200API      *SYN4200API
-	SYN4300API      *SYN4300API
-	SYN4700API      *SYN4700API
-	SYN4900API      *SYN4900API
-	SYN5000API      *SYN5000API
-	SYN6000API      *SYN6000API
-	
+	SYN10API   *SYN10API
+	SYN11API   *SYN11API
+	SYN12API   *SYN12API
+	SYN20API   *SYN20API
+	SYN131API  *SYN131API
+	SYN130API  *SYN130API
+	SYN200API  *SYN200API
+	SYN300API  *SYN300API
+	SYN721API  *SYN721API
+	SYN722API  *SYN722API
+	SYN845API  *SYN845API
+	SYN1000API *SYN1000API
+	SYN1100API *SYN1100API
+	SYN1200API *SYN1200API
+	SYN1300API *SYN1300API
+	SYN1301API *SYN1301API
+	SYN1401API *SYN1401API
+	SYN1500API *SYN1500API
+	SYN1600API *SYN1600API
+	SYN1700API *SYN1700API
+	SYN1800API *SYN1800API
+	SYN1900API *SYN1900API
+	SYN1967API *SYN1967API
+	SYN2100API *SYN2100API
+	SYN2200API *SYN2200API
+	SYN2369API *SYN2369API
+	SYN2400API *SYN2400API
+	SYN2500API *SYN2500API
+	SYN2600API *SYN2600API
+	SYN2700API *SYN2700API
+	SYN2800API *SYN2800API
+	SYN2900API *SYN2900API
+	SYN3000API *SYN3000API
+	SYN3100API *SYN3100API
+	SYN3200API *SYN3200API
+	SYN3300API *SYN3300API
+	SYN3400API *SYN3400API
+	SYN3900API *SYN3900API
+	SYN4000API *SYN4000API
+	SYN4200API *SYN4200API
+	SYN4300API *SYN4300API
+	SYN4700API *SYN4700API
+	SYN4900API *SYN4900API
+	SYN5000API *SYN5000API
+	SYN6000API *SYN6000API
+
 	// Infrastructure components
 	NetworkManager    *network.NetworkManager
 	TransactionPool   *transactions.TransactionPool
@@ -101,13 +103,13 @@ type SynnergyAPIServer struct {
 func NewSynnergyAPIServer(port string, ledgerInstance *ledger.Ledger) *SynnergyAPIServer {
 	// Initialize router
 	router := mux.NewRouter()
-	
+
 	// Initialize infrastructure components
 	encryptionService := common.NewEncryption()
 	gasManager := common.NewGasManager(ledgerInstance, nil, 0.001) // Default gas price
 	networkManager := network.NewNetworkManager("localhost:8080", ledgerInstance, 30*time.Minute)
 	transactionPool := transactions.NewTransactionPool(10000, ledgerInstance, encryptionService)
-	
+
 	// Create API server instance
 	server := &SynnergyAPIServer{
 		Router:            router,
@@ -118,13 +120,13 @@ func NewSynnergyAPIServer(port string, ledgerInstance *ledger.Ledger) *SynnergyA
 		EncryptionService: encryptionService,
 		GasManager:        gasManager,
 	}
-	
+
 	// Initialize all API modules
 	server.initializeAPIModules()
-	
+
 	// Register all routes
 	server.registerRoutes()
-	
+
 	return server
 }
 
@@ -140,7 +142,11 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.StorageAPI = NewStorageAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
 	s.DataManagementAPI = NewDataManagementAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
 	s.AccountBalanceAPI = NewAccountBalanceAPI(s.LedgerInstance, s.ConsensusEngine, s.NetworkManager.SynnergyMutex)
-	
+	s.DeFiAPI = NewDeFiAPI(s.LedgerInstance)
+	s.GovernanceAPI = NewGovernanceAPI(s.LedgerInstance)
+	s.DAOAPI = NewDAOAPI(s.LedgerInstance)
+	s.ComplianceAPI = NewComplianceAPI(s.LedgerInstance)
+
 	// Initialize ALL Token APIs - Complete Registry
 	s.SYN10API = NewSYN10API(s.LedgerInstance)
 	s.SYN11API = NewSYN11API(s.LedgerInstance)
@@ -187,7 +193,7 @@ func (s *SynnergyAPIServer) initializeAPIModules() {
 	s.SYN4900API = NewSYN4900API(s.LedgerInstance, &common.SynnergyConsensus{}, &common.SynnergyMutex{})
 	s.SYN5000API = NewSYN5000API(s.LedgerInstance, &common.SynnergyConsensus{}, &common.SynnergyMutex{})
 	s.SYN6000API = NewSYN6000API(s.LedgerInstance)
-	
+
 	log.Printf("✅ Initialized %d Token APIs", 44)
 }
 
@@ -196,10 +202,10 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	// Root health check endpoint
 	s.Router.HandleFunc("/health", s.HealthCheck).Methods("GET")
 	s.Router.HandleFunc("/", s.Welcome).Methods("GET")
-	
+
 	// API version prefix
 	apiV1 := s.Router.PathPrefix("/api/v1").Subrouter()
-	
+
 	// Register core module routes
 	s.ConsensusAPI.RegisterRoutes(apiV1)
 	s.NetworkAPI.RegisterRoutes(apiV1)
@@ -210,7 +216,11 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	s.StorageAPI.RegisterRoutes(apiV1)
 	s.DataManagementAPI.RegisterRoutes(apiV1)
 	s.AccountBalanceAPI.RegisterRoutes(apiV1)
-	
+	s.DeFiAPI.RegisterRoutes(apiV1)
+	s.GovernanceAPI.RegisterRoutes(apiV1)
+	s.DAOAPI.RegisterRoutes(apiV1)
+	s.ComplianceAPI.RegisterRoutes(apiV1)
+
 	// Register ALL Token API Routes - Complete Registry
 	s.SYN10API.RegisterRoutes(apiV1)
 	s.SYN11API.RegisterRoutes(apiV1)
@@ -257,14 +267,14 @@ func (s *SynnergyAPIServer) registerRoutes() {
 	s.SYN4900API.RegisterRoutes(apiV1)
 	s.SYN5000API.RegisterRoutes(apiV1)
 	s.SYN6000API.RegisterRoutes(apiV1)
-	
+
 	// System information endpoints
 	apiV1.HandleFunc("/system/info", s.GetSystemInfo).Methods("GET")
 	apiV1.HandleFunc("/system/status", s.GetSystemStatus).Methods("GET")
 	apiV1.HandleFunc("/system/metrics", s.GetSystemMetrics).Methods("GET")
 	apiV1.HandleFunc("/system/tokens", s.GetRegisteredTokens).Methods("GET")
-	
-	log.Printf("✅ Registered routes for %d Token APIs + %d Core APIs", 44, 5)
+
+	log.Printf("✅ Registered routes for %d Token APIs + %d Core APIs", 44, 13)
 }
 
 // Start starts the API server
@@ -273,15 +283,15 @@ func (s *SynnergyAPIServer) Start() error {
 	corsOrigins := handlers.AllowedOrigins([]string{"*"})
 	corsHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	corsMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
-	
+
 	// Apply CORS middleware
 	handler := handlers.CORS(corsOrigins, corsHeaders, corsMethods)(s.Router)
-	
+
 	// Start server
 	log.Printf("🚀 Starting Synnergy Network API Server on port %s", s.Port)
 	log.Printf("📚 API Documentation available at: http://localhost:%s/", s.Port)
-	log.Printf("🔗 Total APIs Registered: %d Token APIs + %d Core APIs", 44, 9)
-	
+	log.Printf("🔗 Total APIs Registered: %d Token APIs + %d Core APIs", 44, 13)
+
 	return http.ListenAndServe(":"+s.Port, handler)
 }
 
@@ -299,12 +309,12 @@ func (s *SynnergyAPIServer) HealthCheck(w http.ResponseWriter, r *http.Request) 
 			"tokens":       "running",
 		},
 		"registered_apis": map[string]int{
-			"core_apis":  5,
+			"core_apis":  13,
 			"token_apis": 44,
-			"total_apis": 49,
+			"total_apis": 57,
 		},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
@@ -313,13 +323,13 @@ func (s *SynnergyAPIServer) HealthCheck(w http.ResponseWriter, r *http.Request) 
 // Welcome provides API documentation and available endpoints
 func (s *SynnergyAPIServer) Welcome(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
-		"message": "Welcome to Synnergy Network API",
-		"version": "1.0.0",
+		"message":       "Welcome to Synnergy Network API",
+		"version":       "1.0.0",
 		"documentation": "Complete API Registry - All Token Standards Supported",
 		"registered_apis": map[string]interface{}{
 			"core_apis": map[string]string{
 				"consensus":      "/api/v1/consensus/*",
-				"network":        "/api/v1/network/*", 
+				"network":        "/api/v1/network/*",
 				"transactions":   "/api/v1/transactions/*",
 				"smart_contract": "/api/v1/smart_contract/*",
 				"wallet":         "/api/v1/wallet/*",
@@ -372,7 +382,7 @@ func (s *SynnergyAPIServer) Welcome(w http.ResponseWriter, r *http.Request) {
 			},
 			"system_apis": map[string]string{
 				"info":    "/api/v1/system/info",
-				"status":  "/api/v1/system/status", 
+				"status":  "/api/v1/system/status",
 				"metrics": "/api/v1/system/metrics",
 				"tokens":  "/api/v1/system/tokens",
 				"health":  "/health",
@@ -380,7 +390,7 @@ func (s *SynnergyAPIServer) Welcome(w http.ResponseWriter, r *http.Request) {
 		},
 		"total_endpoints": "1000+ endpoints across 48 APIs",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
@@ -389,14 +399,14 @@ func (s *SynnergyAPIServer) Welcome(w http.ResponseWriter, r *http.Request) {
 // GetSystemInfo returns system information
 func (s *SynnergyAPIServer) GetSystemInfo(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
-		"system": "Synnergy Network",
-		"version": "1.0.0",
+		"system":    "Synnergy Network",
+		"version":   "1.0.0",
 		"consensus": "Proof of History + Proof of Stake + Proof of Work",
-		"network": "Synnergy Mainnet",
+		"network":   "Synnergy Mainnet",
 		"registered_apis": map[string]interface{}{
-			"core_apis":  9,
+			"core_apis":  13,
 			"token_apis": 44,
-			"total_apis": 53,
+			"total_apis": 57,
 		},
 		"supported_standards": []string{
 			"SYN10", "SYN11", "SYN12", "SYN20", "SYN131", "SYN130", "SYN200", "SYN300",
@@ -407,7 +417,7 @@ func (s *SynnergyAPIServer) GetSystemInfo(w http.ResponseWriter, r *http.Request
 			"SYN3900", "SYN4000", "SYN4200", "SYN4300", "SYN4700", "SYN4900", "SYN5000", "SYN6000",
 		},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
@@ -420,7 +430,7 @@ func (s *SynnergyAPIServer) GetSystemStatus(w http.ResponseWriter, r *http.Reque
 		"uptime": time.Since(time.Now()).String(),
 		"services": map[string]string{
 			"api_server":   "running",
-			"consensus":    "running", 
+			"consensus":    "running",
 			"network":      "running",
 			"transactions": "running",
 			"ledger":       "running",
@@ -430,7 +440,7 @@ func (s *SynnergyAPIServer) GetSystemStatus(w http.ResponseWriter, r *http.Reque
 			"token_apis": "healthy",
 		},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
@@ -440,10 +450,10 @@ func (s *SynnergyAPIServer) GetSystemStatus(w http.ResponseWriter, r *http.Reque
 func (s *SynnergyAPIServer) GetSystemMetrics(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"api_metrics": map[string]interface{}{
-			"total_apis_registered": 49,
-			"core_apis":            5,
-			"token_apis":           44,
-			"total_endpoints":      "1000+",
+			"total_apis_registered": 57,
+			"core_apis":             13,
+			"token_apis":            44,
+			"total_endpoints":       "1000+",
 		},
 		"performance": map[string]interface{}{
 			"avg_response_time": "50ms",
@@ -451,7 +461,7 @@ func (s *SynnergyAPIServer) GetSystemMetrics(w http.ResponseWriter, r *http.Requ
 			"error_rate":        "0.1%",
 		},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
@@ -509,10 +519,10 @@ func (s *SynnergyAPIServer) GetRegisteredTokens(w http.ResponseWriter, r *http.R
 
 	response := map[string]interface{}{
 		"registered_token_apis": tokenAPIs,
-		"total_count":          len(tokenAPIs),
-		"message":              "Complete Token API Registry - All Standards Supported",
+		"total_count":           len(tokenAPIs),
+		"message":               "Complete Token API Registry - All Standards Supported",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)

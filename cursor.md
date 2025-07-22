@@ -17,6 +17,12 @@ Before creating ANY API/CLI/Opcode:
 3. ✅ Verify exported functions are callable
 4. ❌ **REJECT & SKIP** if module is empty or insufficient
 
+### STEP 0A: SIMULTANEOUS AGENT CHECK
+Before beginning a new batch:
+1. Confirm whether any other agents are currently running tasks.
+2. If multiple agents will work in parallel, immediately mark the relevant tasks as 🟡 **In Progress** in `task_progress.md` and `cursor_tasklist.md`.
+3. Commit and push these updates so all agents share the same status before continuing.
+
 ### STEP 1: ARCHITECTURE REQUIREMENTS
 For every API/CLI/Opcode created:
 - Routes mapped to REAL module functions
